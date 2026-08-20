@@ -5,8 +5,6 @@
   },
   "deploy": {
     "startCommand": "/usr/local/bin/kaneo-entrypoint.sh",
-    "restartPolicyType": "ON_FAILURE",
-    "healthcheckPath": "/api/health",
-    "healthcheckTimeout": 5
+    "restartPolicyType": "ON_FAILURE"
   }
 }
