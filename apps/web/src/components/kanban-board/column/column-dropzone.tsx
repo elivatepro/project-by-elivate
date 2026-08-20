@@ -11,12 +11,14 @@ import TaskCard from "../task-card";
 type ColumnDropzoneProps = {
   column: ProjectWithTasks["columns"][number];
   disableDragDrop?: boolean;
+  isCollapsed?: boolean;
   onIsOverChange?: (isOver: boolean) => void;
 };
 
 export function ColumnDropzone({
   column,
   disableDragDrop = false,
+  isCollapsed = false,
   onIsOverChange,
 }: ColumnDropzoneProps) {
   const { setNodeRef, isOver } = useDroppable({
@@ -32,6 +34,10 @@ export function ColumnDropzone({
   }, [isOver, onIsOverChange]);
 
   const reduceMotion = useReducedMotion();
+
+  if (isCollapsed) {
+    return <div ref={setNodeRef} className="h-full w-full" />;
+  }
 
   return (
     <div ref={setNodeRef} className="flex-1 min-h-0">

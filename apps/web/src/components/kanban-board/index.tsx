@@ -18,6 +18,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { produce } from "immer";
 import { useEffect, useState } from "react";
 import { useUpdateTask } from "@/hooks/mutations/task/use-update-task";
+import { useCollapsedBoardColumns } from "@/hooks/use-collapsed-board-columns";
 import { useRegisterShortcuts } from "@/hooks/use-keyboard-shortcuts";
 import useBulkSelectionStore from "@/store/bulk-selection";
 import useProjectStore from "@/store/project";
@@ -42,6 +43,9 @@ function KanbanBoard({ project, disableDragDrop = false }: KanbanBoardProps) {
     clearFocus,
   } = useBulkSelectionStore();
   const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null);
+  const { collapsedColumnIds, toggleColumn } = useCollapsedBoardColumns(
+    project?.id,
+  );
   const { mutate: updateTask } = useUpdateTask();
   const navigate = useNavigate();
 
@@ -254,9 +258,18 @@ function KanbanBoard({ project, disableDragDrop = false }: KanbanBoardProps) {
             {project.columns?.map((column) => (
               <div
                 key={column.id}
-                className="h-full max-w-96 min-w-80 shrink-0 flex-1"
+                className={
+                  collapsedColumnIds.includes(column.id)
+                    ? "h-full w-12 min-w-12 max-w-12 flex-none transition-[width,min-width,max-width] duration-200 ease-out motion-reduce:transition-none"
+                    : "h-full w-80 min-w-80 max-w-96 shrink-0 flex-1 transition-[width,min-width,max-width] duration-200 ease-out motion-reduce:transition-none"
+                }
               >
-                <Column column={column} disableDragDrop={disableDragDrop} />
+                <Column
+                  column={column}
+                  disableDragDrop={disableDragDrop}
+                  isCollapsed={collapsedColumnIds.includes(column.id)}
+                  onToggleCollapsed={() => toggleColumn(column.id)}
+                />
               </div>
             ))}
           </div>

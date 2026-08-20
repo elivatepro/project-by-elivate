@@ -1882,7 +1882,9 @@
 			"noTasks": "No tasks"
 		},
 		"kanban": {
-			"addTask": "Add task"
+			"addTask": "Add task",
+			"collapseColumn": "Collapse {{column}} column",
+			"expandColumn": "Expand {{column}} column"
 		},
 		"pr": {
 			"merged": "Merged",
