@@ -700,6 +700,19 @@ input:-webkit-autofill:active {
     background: color-mix(in srgb, var(--accent) 22%, transparent);
     object-fit: contain;
     overflow: hidden;
+    transition:
+      border-color 0.12s ease,
+      outline-color 0.12s ease;
+  }
+
+  .kaneo-tiptap-content
+    .ProseMirror
+    img.kaneo-editor-image.ProseMirror-selectednode,
+  .kaneo-comment-editor-prose
+    img.kaneo-editor-image.ProseMirror-selectednode {
+    border-color: color-mix(in srgb, var(--ring) 82%, var(--border));
+    outline: 2px solid color-mix(in srgb, var(--ring) 44%, transparent);
+    outline-offset: 2px;
   }
 
   .kaneo-create-task-modal .kaneo-comment-editor-prose img.kaneo-editor-image {

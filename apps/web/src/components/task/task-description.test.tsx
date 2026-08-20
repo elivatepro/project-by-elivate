@@ -1,13 +1,33 @@
-import { fireEvent, render, waitFor } from "@testing-library/react";
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from "@testing-library/react";
 import { Extension } from "@tiptap/core";
 import TaskItem from "@tiptap/extension-task-item";
+import type { Editor } from "@tiptap/react";
 import { describe, expect, it, vi } from "vitest";
 import TaskDescription from "./task-description";
 
 const mocks = vi.hoisted(() => ({
   t: (key: string) => key,
   tasks: new Map<string, { id: string; description: string }>(),
+  editors: [] as unknown[],
 }));
+
+vi.mock("@tiptap/react", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@tiptap/react")>();
+  return {
+    ...actual,
+    useEditor: (...args: Parameters<typeof actual.useEditor>) => {
+      const editor = actual.useEditor(...args);
+      if (editor && !mocks.editors.includes(editor)) mocks.editors.push(editor);
+      return editor;
+    },
+  };
+});
 
 // Only the extensions that pull in browser-only machinery are replaced, and
 // they are replaced with real (inert) Tiptap extensions rather than plain
@@ -62,6 +82,10 @@ vi.mock("@/lib/upload-task-image", () => ({ uploadTaskImage: vi.fn() }));
 vi.mock("@/lib/shiki-highlighter", () => ({
   getSharedShikiHighlighter: () => new Promise(() => {}),
 }));
+
+function latestEditor() {
+  return mocks.editors[mocks.editors.length - 1] as Editor;
+}
 
 describe("TaskDescription", () => {
   it("renders the parent description when navigating from a subtask (#1580)", async () => {
@@ -131,5 +155,46 @@ describe("TaskDescription", () => {
 
     expect(container.textContent).toContain("parent body");
     expect(container.textContent).not.toContain("child body");
+  });
+
+  it("removes a selected image from the task description", async () => {
+    mocks.tasks.set("image-task", {
+      id: "image-task",
+      description: "",
+    });
+
+    const { container } = render(<TaskDescription taskId="image-task" />);
+    await waitFor(() => expect(mocks.editors).not.toHaveLength(0));
+
+    await act(async () => {
+      latestEditor().commands.setContent({
+        type: "doc",
+        content: [
+          {
+            type: "image",
+            attrs: {
+              src: "https://example.com/upload.png",
+              alt: "Uploaded image",
+            },
+          },
+        ],
+      });
+      latestEditor().commands.setNodeSelection(0);
+    });
+
+    const image = container.querySelector<HTMLImageElement>(
+      "img.kaneo-editor-image",
+    );
+    expect(image).not.toBeNull();
+    fireEvent.click(image as HTMLImageElement);
+
+    const removeButton = await screen.findByRole("button", {
+      name: "common:actions.remove",
+    });
+    fireEvent.click(removeButton);
+
+    await waitFor(() => {
+      expect(container.querySelector("img.kaneo-editor-image")).toBeNull();
+    });
   });
 });

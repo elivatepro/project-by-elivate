@@ -8,7 +8,7 @@ import TableRow from "@tiptap/extension-table-row";
 import TaskList from "@tiptap/extension-task-list";
 import { Markdown } from "@tiptap/markdown";
 import { Fragment, Slice } from "@tiptap/pm/model";
-import { EditorState, TextSelection } from "@tiptap/pm/state";
+import { EditorState, NodeSelection, TextSelection } from "@tiptap/pm/state";
 import { EditorContent, useEditor } from "@tiptap/react";
 import { BubbleMenu } from "@tiptap/react/menus";
 import StarterKit from "@tiptap/starter-kit";
@@ -24,6 +24,7 @@ import {
   Code,
   Columns3,
   Copy,
+  Eye,
   Grid2x2X,
   Heading2,
   Italic,
@@ -36,6 +37,7 @@ import {
   Rows3,
   Strikethrough,
   Table2,
+  Trash2,
   Underline as UnderlineIcon,
 } from "lucide-react";
 import type { MouseEvent as ReactMouseEvent } from "react";
@@ -871,6 +873,7 @@ export default function TaskDescription({ taskId }: TaskDescriptionProps) {
       const target = event.target as HTMLElement | null;
       if (!(target instanceof HTMLImageElement)) return;
       if (!target.classList.contains("kaneo-editor-image")) return;
+      if (editor.isEditable) return;
 
       event.preventDefault();
       setPreviewImage({
@@ -1677,6 +1680,51 @@ export default function TaskDescription({ taskId }: TaskDescriptionProps) {
             onClick={() => setLink()}
           >
             <Link2 className="size-3.5" />
+          </Button>
+        </BubbleMenu>
+      )}
+
+      {editor && canEdit && (
+        <BubbleMenu
+          editor={editor}
+          pluginKey="kaneo-image-bubble"
+          className="kaneo-tiptap-bubble"
+          shouldShow={({ editor: activeEditor }) =>
+            activeEditor.isActive("image") &&
+            activeEditor.state.selection instanceof NodeSelection
+          }
+        >
+          <Button
+            type="button"
+            variant="ghost"
+            size="xs"
+            title={t("tasks:detail.editor.previewImage")}
+            onClick={() => {
+              const { src, alt } = editor.getAttributes("image") as {
+                src?: string;
+                alt?: string;
+              };
+              if (!src) return;
+              setPreviewImage({
+                src,
+                alt: alt || t("tasks:detail.editor.previewImage"),
+              });
+            }}
+          >
+            <Eye className="size-3.5" />
+            {t("tasks:detail.editor.previewImage")}
+          </Button>
+          <span className="kaneo-tiptap-bubble-separator" />
+          <Button
+            type="button"
+            variant="ghost"
+            size="xs"
+            className="text-destructive"
+            title={t("common:actions.remove")}
+            onClick={() => editor.chain().focus().deleteSelection().run()}
+          >
+            <Trash2 className="size-3.5" />
+            {t("common:actions.remove")}
           </Button>
         </BubbleMenu>
       )}
