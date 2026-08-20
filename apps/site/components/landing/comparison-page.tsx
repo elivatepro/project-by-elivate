@@ -62,9 +62,9 @@ export function ComparisonPage({ data }: { data: Comparison }) {
       <JsonLd data={faqJsonLd(data.faq)} />
       <JsonLd
         data={breadcrumbJsonLd([
-          { name: "Kaneo", path: "/" },
+          { name: "Project by Elivate", path: "/" },
           { name: "Alternatives", path: "/alternatives" },
-          { name: `Kaneo vs ${data.competitor}`, path },
+          { name: `Project by Elivate vs ${data.competitor}`, path },
         ])}
       />
       <Navbar />
@@ -74,7 +74,7 @@ export function ComparisonPage({ data }: { data: Comparison }) {
             <div className="max-w-2xl">
               <FadeIn delay={0}>
                 <p className="font-medium text-primary text-sm">
-                  Kaneo vs {data.competitor}
+                  Project by Elivate vs {data.competitor}
                 </p>
               </FadeIn>
               <FadeIn delay={60}>
@@ -108,7 +108,8 @@ export function ComparisonPage({ data }: { data: Comparison }) {
             <FadeIn delay={200}>
               <div className="mt-12 max-w-3xl rounded-2xl border border-border/70 bg-card/70 p-5 md:p-6">
                 <h2 className="font-medium text-sm">
-                  Short answer: is Kaneo a good {data.competitor} alternative?
+                  Short answer: is Project by Elivate a good {data.competitor}{" "}
+                  alternative?
                 </h2>
                 <p className="mt-2 text-foreground/80 text-sm leading-relaxed md:text-base">
                   {data.verdict}
@@ -136,7 +137,7 @@ export function ComparisonPage({ data }: { data: Comparison }) {
                 <div className="grid grid-cols-[1.4fr_1fr_1fr] text-sm">
                   <div className="border-border/50 border-b px-4 py-3 font-medium sm:px-6" />
                   <div className="border-border/50 border-b bg-primary/5 px-4 py-3 text-center font-medium sm:px-6">
-                    Kaneo
+                    Project by Elivate
                   </div>
                   <div className="border-border/50 border-b px-4 py-3 text-center font-medium text-foreground/70 sm:px-6">
                     {data.competitor}
@@ -182,7 +183,7 @@ export function ComparisonPage({ data }: { data: Comparison }) {
           <section className="px-6 py-14 md:py-20">
             <div className="mx-auto w-full max-w-6xl">
               <h2 className="max-w-2xl text-2xl font-medium md:text-3xl">
-                Why teams choose Kaneo
+                Why teams choose Project by Elivate
               </h2>
               <div className="mt-8 grid gap-8 md:grid-cols-3">
                 {data.reasons.map((reason) => (
@@ -224,7 +225,7 @@ export function ComparisonPage({ data }: { data: Comparison }) {
           <section className="px-6 py-14 md:py-20">
             <div className="mx-auto w-full max-w-6xl">
               <h2 className="max-w-2xl text-2xl font-medium md:text-3xl">
-                Kaneo vs {data.competitor}, answered
+                Project by Elivate vs {data.competitor}, answered
               </h2>
               <div className="mt-8 grid gap-8 md:grid-cols-2">
                 {data.faq.map((entry) => (
@@ -247,7 +248,7 @@ export function ComparisonPage({ data }: { data: Comparison }) {
                         className="inline-flex h-8 items-center rounded-lg border border-border/70 px-3 text-foreground/70 text-sm transition-colors hover:bg-accent hover:text-foreground"
                         href={alternativePath(entry.slug)}
                       >
-                        Kaneo vs {entry.competitor}
+                        Project by Elivate vs {entry.competitor}
                       </a>
                     ))}
                     <a
@@ -265,7 +266,7 @@ export function ComparisonPage({ data }: { data: Comparison }) {
                   className="inline-flex h-10 items-center justify-center rounded-lg border border-transparent bg-primary px-4 font-medium text-primary-foreground text-sm transition-colors hover:bg-primary/90"
                   href={SIGN_UP}
                 >
-                  Try Kaneo Cloud free
+                  Try Project by Elivate Cloud free
                 </a>
                 <a
                   className="inline-flex h-10 items-center justify-center rounded-lg border border-border bg-transparent px-4 font-medium text-sm transition-colors hover:bg-accent"

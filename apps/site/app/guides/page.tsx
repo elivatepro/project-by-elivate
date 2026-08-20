@@ -19,7 +19,7 @@ export default function Page() {
     <>
       <JsonLd
         data={breadcrumbJsonLd([
-          { name: "Kaneo", path: "/" },
+          { name: "Project by Elivate", path: "/" },
           { name: "Guides", path: "/guides" },
         ])}
       />
@@ -27,7 +27,7 @@ export default function Page() {
         data={{
           "@context": "https://schema.org",
           "@type": "ItemList",
-          name: "Kaneo guides",
+          name: "Project by Elivate guides",
           itemListElement: guideList.map((guide, index) => ({
             "@type": "ListItem",
             position: index + 1,
@@ -52,8 +52,8 @@ export default function Page() {
               <FadeIn delay={120}>
                 <p className="mt-5 text-balance text-foreground/70 text-lg leading-relaxed">
                   Questions people actually ask before choosing a project
-                  manager, answered without pretending Kaneo is the answer to
-                  all of them.
+                  manager, answered without pretending Project by Elivate is the
+                  answer to all of them.
                 </p>
               </FadeIn>
             </div>
@@ -81,7 +81,7 @@ export default function Page() {
           <section className="px-6 py-12 md:py-16">
             <div className="mx-auto w-full max-w-6xl">
               <h2 className="text-2xl font-medium md:text-3xl">
-                Compare Kaneo directly
+                Compare Project by Elivate directly
               </h2>
               <div className="mt-6 flex flex-wrap gap-2">
                 {comparisonList.map((comparison) => (

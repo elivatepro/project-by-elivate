@@ -5,7 +5,7 @@ import { Navbar } from "@/components/landing/navbar";
 
 export const metadata: Metadata = {
   title: "Terms of Service",
-  description: "The terms that govern your use of Kaneo Cloud.",
+  description: "The terms that govern your use of Project by Elivate Cloud.",
   alternates: {
     canonical: "/terms",
   },
@@ -38,22 +38,24 @@ export default function TermsPage() {
                 Last updated: July 28, 2026
               </p>
               <p className="mt-5 text-foreground/85 text-base leading-relaxed">
-                These terms govern your use of the managed Kaneo Cloud service
-                at cloud.kaneo.app, operated by Andrej Acevski (sole proprietor,
-                Macedonia), referred to as “we” or “us”. By creating an account
-                you agree to these terms. The open-source Kaneo software itself
-                is separately licensed under the MIT license, and self-hosted
-                installations are not covered by these terms.
+                These terms govern your use of the managed Project by Elivate
+                Cloud service at cloud.kaneo.app, operated by Andrej Acevski
+                (sole proprietor, Macedonia), referred to as “we” or “us”. By
+                creating an account you agree to these terms. The open-source
+                Project by Elivate software itself is separately licensed under
+                the MIT license, and self-hosted installations are not covered
+                by these terms.
               </p>
             </div>
 
             <Section title="1. The service">
               <p>
-                Kaneo Cloud is a hosted version of the open-source Kaneo project
-                management application. We operate the infrastructure, apply
-                updates, and maintain backups so you don’t have to. We may
-                improve or modify the service over time; we will not materially
-                reduce core functionality of a paid plan during a paid period.
+                Project by Elivate Cloud is a hosted version of the open-source
+                Project by Elivate project management application. We operate
+                the infrastructure, apply updates, and maintain backups so you
+                don’t have to. We may improve or modify the service over time;
+                we will not materially reduce core functionality of a paid plan
+                during a paid period.
               </p>
             </Section>
 
@@ -93,10 +95,11 @@ export default function TermsPage() {
 
             <Section title="4. Your content">
               <p>
-                Content you create in Kaneo Cloud belongs to you. You grant us
-                only the rights needed to host, back up, and display it to you
-                and the people you share it with. You can export your data at
-                any time, including for migration to a self-hosted installation.
+                Content you create in Project by Elivate Cloud belongs to you.
+                You grant us only the rights needed to host, back up, and
+                display it to you and the people you share it with. You can
+                export your data at any time, including for migration to a
+                self-hosted installation.
               </p>
             </Section>
 
@@ -141,7 +144,7 @@ export default function TermsPage() {
                 suspend accounts that violate these terms. If we ever
                 discontinue the service, we will give at least 6 months notice
                 and provide a data export path. The open-source, self-hosted
-                edition of Kaneo will always remain available.
+                edition of Project by Elivate will always remain available.
               </p>
             </Section>
 

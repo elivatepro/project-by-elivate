@@ -18,8 +18,8 @@ export function Features() {
                   Minimal surface area. Maximum execution clarity.
                 </h2>
                 <p className="mt-4 max-w-xl text-muted-foreground text-base leading-relaxed">
-                  Kaneo keeps planning operational: less dashboard theater, more
-                  visible ownership and throughput.
+                  Project by Elivate keeps planning operational: less dashboard
+                  theater, more visible ownership and throughput.
                 </p>
                 <div className="mt-6 rounded-xl border border-border/60 bg-muted/30 p-4">
                   <h3 className="text-sm font-medium">

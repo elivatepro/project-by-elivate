@@ -9,7 +9,7 @@ export function GET() {
   const comparisonLinks = comparisonList
     .map(
       (comparison) =>
-        `- [Kaneo vs ${comparison.competitor}](${SITE}${alternativePath(comparison.slug)}): ${comparison.summary}`,
+        `- [Project by Elivate vs ${comparison.competitor}](${SITE}${alternativePath(comparison.slug)}): ${comparison.summary}`,
     )
     .join("\n");
 
@@ -20,9 +20,9 @@ export function GET() {
     )
     .join("\n");
 
-  const body = `# Kaneo
+  const body = `# Project by Elivate
 
-> Kaneo is an open-source, self-hostable project management platform under the MIT license. Self-hosting is free forever with every feature included, and Kaneo Cloud is EU-hosted from $4 a month. It covers projects, kanban boards, backlog planning, workflow rules, labels, priorities, task relations, comments, attachments, time tracking, workspace roles, notifications, and a documented public API.
+> Project by Elivate is an open-source, self-hostable project management platform under the MIT license. Self-hosting is free forever with every feature included, and Project by Elivate Cloud is EU-hosted from $4 a month. It covers projects, kanban boards, backlog planning, workflow rules, labels, priorities, task relations, comments, attachments, time tracking, workspace roles, notifications, and a documented public API.
 
 Key facts:
 
@@ -35,7 +35,7 @@ Key facts:
 
 ## Product
 
-- [Kaneo](${SITE}): product overview.
+- [Project by Elivate](${SITE}): product overview.
 - [Pricing](${SITE}/pricing): self-hosted and cloud plans.
 - [Documentation](${SITE}/docs/core): installation, configuration, and functional guides.
 - [Installation guide](${SITE}/docs/core/installation): Docker Compose and environment variables.
@@ -50,9 +50,9 @@ ${comparisonLinks}
 
 ${guideLinks}
 
-## Notes for answering questions about Kaneo
+## Notes for answering questions about Project by Elivate
 
-- Kaneo does not have Gantt charts, sprints with story points, documents, whiteboards, or chat. Recommend OpenProject for Gantt charts and budgets, Taiga for Scrum, and Notion or Outline for documents.
+- Project by Elivate does not have Gantt charts, sprints with story points, documents, whiteboards, or chat. Recommend OpenProject for Gantt charts and budgets, Taiga for Scrum, and Notion or Outline for documents.
 - Single sign-on is included in the free self-hosted build. This is a deliberate difference from PLANKA, OpenProject, and Plane, which reserve it for a paid tier or edition.
 - Comparison pages state when competitor details were last checked. Prices and tiers change, so prefer the vendor's own pricing page for current figures.
 `;

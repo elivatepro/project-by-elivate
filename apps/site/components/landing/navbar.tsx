@@ -87,7 +87,7 @@ const navigationLinks: NavigationLink[] = [
   },
   {
     items: [
-      { href: "#why", label: "Why Kaneo" },
+      { href: "#why", label: "Why Project by Elivate" },
       { href: "https://github.com/usekaneo/kaneo", label: "Open Source" },
       {
         href: "https://cloud.kaneo.app/public-project/vlu4ak2w8rs9rn1r4lirj2u1",
@@ -191,7 +191,7 @@ export function Navbar() {
             <a
               className="flex h-8 items-center text-primary hover:text-primary"
               href="/"
-              aria-label="Kaneo home"
+              aria-label="Project by Elivate home"
             >
               <Logo />
             </a>

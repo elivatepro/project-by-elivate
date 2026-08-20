@@ -1,23 +1,14 @@
 apiVersion: v2
-name: kaneo
-description: Kaneo - All you need. Nothing you don't. Open source project management that works for you.
-type: application
-version: 2.20.0
-appVersion: "2.20.0"
-keywords:
-  - project-management
-  - kanban
-  - task-management
-  - productivity
-  - collaboration
-home: https://kaneo.app
+name: project-by-elivate
+description: Project by Elivate - All you need. Nothing you don't.
+home: https://elivate.co
 sources:
-  - https://github.com/usekaneo/kaneo
-icon: https://assets.kaneo.app/logo-text.png
+  - https://github.com/elivatepro/project-by-elivate
+icon: https://raw.githubusercontent.com/elivatepro/project-by-elivate/main/apps/web/public/logo-light.svg
 maintainers:
-  - name: Kaneo Team
-    url: https://github.com/usekaneo
-    email: info@kaneo.app
+  - name: Elivate Team
+    url: https://github.com/elivatepro
+    email: info@elivate.co
 annotations:
   artifacthub.io/license: MIT
   artifacthub.io/containsSecurityUpdates: "false"

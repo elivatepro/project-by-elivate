@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://kaneo.app">
-    <img src="https://assets.kaneo.app/logo-text.png" alt="Kaneo's logo" width="450" />
+    <img src="https://assets.kaneo.app/logo-text.png" alt="Project by Elivate's logo" width="450" />
   </a>
 </p>
 
@@ -27,16 +27,16 @@
 
 
 <p align="center">
-  <img src="https://assets.kaneo.app/readme.png" alt="Kaneo Dashboard" />
+  <img src="https://assets.kaneo.app/readme.png" alt="Project by Elivate Dashboard" />
 </p>
 
-## Why Kaneo?
+## Why Project by Elivate?
 
-After years of using bloated, overcomplicated project management platforms that distracted from actual work, we built Kaneo to be different.
+After years of using bloated, overcomplicated project management platforms that distracted from actual work, we built Project by Elivate to be different.
 
 The problem with most tools isn't that they lack features, it's that they have **too many**. Every notification, every unnecessary button, every complex workflow pulls your team away from what matters: **building great products**.
 
-We believe the best tools are **invisible**. They should amplify your team's natural workflow, not force you to adapt to theirs. Kaneo is built on the principle that **less is more**: every feature exists because it solves a real problem, not because it looks impressive in a demo.
+We believe the best tools are **invisible**. They should amplify your team's natural workflow, not force you to adapt to theirs. Project by Elivate is built on the principle that **less is more**: every feature exists because it solves a real problem, not because it looks impressive in a demo.
 
 **What makes it different:**
 - **Clean interface** that focuses on your work, not the tool
@@ -44,11 +44,11 @@ We believe the best tools are **invisible**. They should amplify your team's nat
 - **Actually fast** because we care about performance
 - **Open source** with a permissive MIT license
 
-Learn more about Kaneo's features and capabilities in our [documentation](https://kaneo.app/docs/core).
+Learn more about Project by Elivate's features and capabilities in our [documentation](https://kaneo.app/docs/core).
 
 ## Sponsors
 
-Kaneo is open source. If you find it useful, consider [sponsoring the project](https://github.com/sponsors/andrejsshell) to help support ongoing development.
+Project by Elivate is open source. If you find it useful, consider [sponsoring the project](https://github.com/sponsors/andrejsshell) to help support ongoing development.
 
 <!-- sponsors --><a href="https://github.com/danielsada"><img src="https:&#x2F;&#x2F;github.com&#x2F;danielsada.png" width="60px" alt="User avatar: Daniel Sada" /></a><a href="https://github.com/randoneering"><img src="https:&#x2F;&#x2F;github.com&#x2F;randoneering.png" width="60px" alt="User avatar: (justin)randoneering" /></a><a href="https://github.com/floreabogdan"><img src="https:&#x2F;&#x2F;github.com&#x2F;floreabogdan.png" width="60px" alt="User avatar: Bogdan FLOREA" /></a><a href="https://github.com/meruw"><img src="https:&#x2F;&#x2F;github.com&#x2F;meruw.png" width="60px" alt="User avatar: meri" /></a><a href="https://github.com/barbanet"><img src="https:&#x2F;&#x2F;github.com&#x2F;barbanet.png" width="60px" alt="User avatar: Damián Culotta" /></a><!-- sponsors -->
 
@@ -63,13 +63,13 @@ curl -fsSL https://assets.kaneo.app/install.sh | sh
 drim setup
 ```
 
-That's it. Your Kaneo instance will be running with automatic HTTPS, database setup, and all services configured.
+That's it. Your Project by Elivate instance will be running with automatic HTTPS, database setup, and all services configured.
 
 Perfect for quick deployments and production setups where you want things to just work.
 
 ### Quick Start with Docker Compose
 
-The fastest way to try Kaneo is with Docker Compose. This sets up Kaneo and PostgreSQL with a single Kaneo container:
+The fastest way to try Project by Elivate is with Docker Compose. This sets up Project by Elivate and PostgreSQL with a single Project by Elivate container:
 
 ```yaml
 services:
@@ -105,7 +105,7 @@ volumes:
 
 Save this as `compose.yml`, copy `.env.sample` to `.env`, uncomment `KANEO_CLIENT_URL=http://localhost:5173`, and set `POSTGRES_PASSWORD=<password>` and `AUTH_SECRET=<output of openssl rand -hex 32>`, run `docker compose up -d`, and open [http://localhost:5173](http://localhost:5173).
 
-In Docker Compose, the bundled Kaneo container reaches PostgreSQL at the service hostname `postgres`.
+In Docker Compose, the bundled Project by Elivate container reaches PostgreSQL at the service hostname `postgres`.
 If you run the API on your host instead of inside Compose, use `localhost` or set `DATABASE_URL` explicitly.
 
 > **Important:** See our [full documentation](https://kaneo.app/docs/core) for detailed setup instructions, environment variable configuration, and troubleshooting guides.
@@ -116,7 +116,7 @@ For development, see our [Environment Setup Guide](ENVIRONMENT_SETUP.md) for det
 
 ### Configuration
 
-Kaneo requires several environment variables to be configured. The Docker Compose setup above handles the database automatically, but you'll need to configure environment variables for the API and web services.
+Project by Elivate requires several environment variables to be configured. The Docker Compose setup above handles the database automatically, but you'll need to configure environment variables for the API and web services.
 
 For complete configuration instructions, including all required environment variables, database setup for non-Docker deployments, and advanced settings, see the [documentation](https://kaneo.app/docs/core). Advanced deployments can still use the separate `ghcr.io/usekaneo/api` and `ghcr.io/usekaneo/web` images.
 
@@ -126,7 +126,7 @@ If you're running Kubernetes, we provide a comprehensive Helm chart. Check out t
 
 ## Development
 
-Want to hack on Kaneo? See our [Environment Setup Guide](ENVIRONMENT_SETUP.md) for detailed instructions on configuring environment variables and troubleshooting common issues like CORS problems.
+Want to hack on Project by Elivate? See our [Environment Setup Guide](ENVIRONMENT_SETUP.md) for detailed instructions on configuring environment variables and troubleshooting common issues like CORS problems.
 
 Quick start:
 ```bash
@@ -146,7 +146,7 @@ For contributing guidelines, code structure, and development best practices, che
 
 ## MCP Server
 
-Kaneo has an official [MCP (Model Context Protocol) server](https://kaneo.app/docs/core/integrations/mcp), so AI tools like Claude, Cursor, and other MCP clients can manage your tasks, projects, and labels. Every instance ships a built-in HTTP MCP endpoint at `/api/mcp`, and for stdio clients there is the official [@kaneo/mcp](https://www.npmjs.com/package/@kaneo/mcp) package on npm (`npx -y @kaneo/mcp`).
+Project by Elivate has an official [MCP (Model Context Protocol) server](https://kaneo.app/docs/core/integrations/mcp), so AI tools like Claude, Cursor, and other MCP clients can manage your tasks, projects, and labels. Every instance ships a built-in HTTP MCP endpoint at `/api/mcp`, and for stdio clients there is the official [@kaneo/mcp](https://www.npmjs.com/package/@kaneo/mcp) package on npm (`npx -y @kaneo/mcp`).
 
 ## Community
 
@@ -175,5 +175,5 @@ MIT License - see [LICENSE](LICENSE) for details.
 </div>
 
 <p align="center">
-  Built with ❤️ by the Kaneo team and <a href="#contributors">contributors</a>
+  Built with ❤️ by the Project by Elivate team and <a href="#contributors">contributors</a>
 </p>

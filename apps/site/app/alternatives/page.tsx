@@ -8,9 +8,9 @@ import { alternativePath, comparisonList } from "@/lib/comparisons";
 import { guideList, guidePath } from "@/lib/guides";
 
 export const metadata: Metadata = {
-  title: "Kaneo alternatives and comparisons",
+  title: "Project by Elivate alternatives and comparisons",
   description:
-    "How Kaneo compares to Jira, Trello, Linear, Asana, ClickUp, monday.com, PLANKA, Plane, OpenProject, Redmine, and other project management tools. Open source, self-hostable, MIT licensed.",
+    "How Project by Elivate compares to Jira, Trello, Linear, Asana, ClickUp, monday.com, PLANKA, Plane, OpenProject, Redmine, and other project management tools. Open source, self-hostable, MIT licensed.",
   alternates: { canonical: "/alternatives" },
 };
 
@@ -32,7 +32,7 @@ export default function Page() {
     <>
       <JsonLd
         data={breadcrumbJsonLd([
-          { name: "Kaneo", path: "/" },
+          { name: "Project by Elivate", path: "/" },
           { name: "Alternatives", path: "/alternatives" },
         ])}
       />
@@ -40,11 +40,11 @@ export default function Page() {
         data={{
           "@context": "https://schema.org",
           "@type": "ItemList",
-          name: "Kaneo comparisons",
+          name: "Project by Elivate comparisons",
           itemListElement: comparisonList.map((comparison, index) => ({
             "@type": "ListItem",
             position: index + 1,
-            name: `Kaneo vs ${comparison.competitor}`,
+            name: `Project by Elivate vs ${comparison.competitor}`,
             url: `https://kaneo.app${alternativePath(comparison.slug)}`,
           })),
         }}
@@ -59,15 +59,15 @@ export default function Page() {
               </FadeIn>
               <FadeIn delay={60}>
                 <h1 className="mt-3 text-balance text-4xl font-medium leading-[1.06] md:text-5xl">
-                  How Kaneo compares
+                  How Project by Elivate compares
                 </h1>
               </FadeIn>
               <FadeIn delay={120}>
                 <p className="mt-5 text-balance text-foreground/70 text-lg leading-relaxed">
-                  Kaneo is an MIT-licensed project manager you can self-host for
-                  free or run as a managed cloud from $4 a month. Here is how it
-                  sits next to the tools people usually weigh it against, and
-                  where each of them is the better answer.
+                  Project by Elivate is an MIT-licensed project manager you can
+                  self-host for free or run as a managed cloud from $4 a month.
+                  Here is how it sits next to the tools people usually weigh it
+                  against, and where each of them is the better answer.
                 </p>
               </FadeIn>
             </div>
@@ -96,7 +96,7 @@ export default function Page() {
                         href={alternativePath(comparison.slug)}
                       >
                         <h3 className="font-medium text-sm transition-colors group-hover:text-primary">
-                          Kaneo vs {comparison.competitor}
+                          Project by Elivate vs {comparison.competitor}
                         </h3>
                         <p className="mt-2 text-foreground/70 text-sm leading-relaxed">
                           {comparison.summary}

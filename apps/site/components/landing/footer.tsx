@@ -6,7 +6,11 @@ export function Footer() {
       <div className="mx-auto w-full max-w-6xl space-y-10">
         <div className="grid gap-10 md:grid-cols-5">
           <div className="space-y-4 md:col-span-2">
-            <a href="/" aria-label="Kaneo home" className="inline-flex">
+            <a
+              href="/"
+              aria-label="Project by Elivate home"
+              className="inline-flex"
+            >
               <Logo />
             </a>
             <p className="max-w-sm text-balance text-muted-foreground text-sm">

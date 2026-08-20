@@ -5,14 +5,14 @@ export function Logo() {
     <span className="inline-flex items-center">
       <Image
         src="/logo-dark.svg"
-        alt="Kaneo"
+        alt="Project by Elivate"
         className="h-6 w-auto dark:hidden"
         width={24}
         height={24}
       />
       <Image
         src="/logo-light.svg"
-        alt="Kaneo"
+        alt="Project by Elivate"
         className="hidden h-6 w-auto dark:block"
         width={24}
         height={24}

@@ -30,14 +30,14 @@ function comparisonMarkdown() {
         .map((entry) => `**${entry.question}**\n\n${entry.answer}`)
         .join("\n\n");
 
-      return `## Kaneo vs ${data.competitor}
+      return `## Project by Elivate vs ${data.competitor}
 
 URL: ${SITE}${alternativePath(data.slug)}
 Competitor details checked: ${data.verifiedOn}
 
 ${data.verdict}
 
-| | Kaneo | ${data.competitor} |
+| | Project by Elivate | ${data.competitor} |
 | --- | --- | --- |
 ${rows}
 
@@ -86,9 +86,9 @@ ${faq}`;
 }
 
 export function GET() {
-  const body = `# Kaneo, full content
+  const body = `# Project by Elivate, full content
 
-> Kaneo is an open-source, self-hostable project management platform under the MIT license. This file contains the full text of Kaneo's comparison and guide pages. Written by the Kaneo team, who build one of the tools discussed.
+> Project by Elivate is an open-source, self-hostable project management platform under the MIT license. This file contains the full text of Project by Elivate's comparison and guide pages. Written by the Project by Elivate team, who build one of the tools discussed.
 
 # Comparisons
 

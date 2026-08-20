@@ -20,8 +20,8 @@ export function Hero() {
           </FadeIn>
           <FadeIn delay={80}>
             <p className="mt-5 text-balance text-lg text-muted-foreground leading-relaxed md:text-xl">
-              Kaneo gives you clean planning, focused execution, and full
-              ownership of your workflow from backlog to release.
+              Project by Elivate gives you clean planning, focused execution,
+              and full ownership of your workflow from backlog to release.
             </p>
           </FadeIn>
 
@@ -71,7 +71,7 @@ export function Hero() {
           </FadeIn>
         </div>
 
-        {/* ── App preview: interactive mock of the real Kaneo UI ── */}
+        {/* ── App preview: interactive mock of the real Project by Elivate UI ── */}
         <FadeIn delay={240} distance={32}>
           <AppPreview />
         </FadeIn>

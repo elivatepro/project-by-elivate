@@ -34,7 +34,7 @@ export async function generateMetadata({
     alternates: { canonical: alternativePath(data.slug) },
     openGraph: {
       type: "article",
-      title: `${data.title} | Kaneo`,
+      title: `${data.title} | Project by Elivate`,
       description: data.description,
       url: `https://kaneo.app${alternativePath(data.slug)}`,
     },

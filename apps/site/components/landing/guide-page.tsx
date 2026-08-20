@@ -29,7 +29,7 @@ export function GuidePage({ data }: { data: Guide }) {
       <JsonLd data={faqJsonLd(data.faq)} />
       <JsonLd
         data={breadcrumbJsonLd([
-          { name: "Kaneo", path: "/" },
+          { name: "Project by Elivate", path: "/" },
           { name: "Guides", path: "/guides" },
           { name: data.question, path },
         ])}
@@ -43,8 +43,8 @@ export function GuidePage({ data }: { data: Guide }) {
           dateModified: data.updatedOn,
           inLanguage: "en",
           mainEntityOfPage: `https://kaneo.app${path}`,
-          author: { "@type": "Organization", name: "Kaneo" },
-          publisher: { "@type": "Organization", name: "Kaneo" },
+          author: { "@type": "Organization", name: "Project by Elivate" },
+          publisher: { "@type": "Organization", name: "Project by Elivate" },
         }}
       />
       <Navbar />
@@ -69,7 +69,8 @@ export function GuidePage({ data }: { data: Guide }) {
             </FadeIn>
             <p className="mt-4 text-foreground/50 text-xs">
               Last updated {formatUpdatedOn(data.updatedOn)}. Written by the
-              Kaneo team, who also build one of the tools mentioned.
+              Project by Elivate team, who also build one of the tools
+              mentioned.
             </p>
           </div>
         </section>
@@ -166,7 +167,7 @@ export function GuidePage({ data }: { data: Guide }) {
                   className="inline-flex h-10 items-center justify-center rounded-lg border border-transparent bg-primary px-4 font-medium text-primary-foreground text-sm transition-colors hover:bg-primary/90"
                   href={SIGN_UP}
                 >
-                  Try Kaneo Cloud free
+                  Try Project by Elivate Cloud free
                 </a>
                 <a
                   className="inline-flex h-10 items-center justify-center rounded-lg border border-border bg-transparent px-4 font-medium text-sm transition-colors hover:bg-accent"

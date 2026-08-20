@@ -12,8 +12,8 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL("https://kaneo.app"),
   title: {
-    default: "Kaneo - All you need. Nothing you don't.",
-    template: "%s | Kaneo",
+    default: "Project by Elivate - All you need. Nothing you don't.",
+    template: "%s | Project by Elivate",
   },
   description:
     "All you need. Nothing you don't. Open source project management that works for you, not against you.",
@@ -26,15 +26,15 @@ export const metadata: Metadata = {
     "self-hosted",
     "team collaboration",
   ],
-  applicationName: "Kaneo",
+  applicationName: "Project by Elivate",
   alternates: {
     canonical: "/",
   },
   openGraph: {
     type: "website",
     url: "https://kaneo.app",
-    siteName: "Kaneo",
-    title: "Kaneo - All you need. Nothing you don't.",
+    siteName: "Project by Elivate",
+    title: "Project by Elivate - All you need. Nothing you don't.",
     description:
       "Open source project management that works for you, not against you. Self-hosted, simple, and powerful.",
     images: [
@@ -42,13 +42,13 @@ export const metadata: Metadata = {
         url: "/images/hero.png",
         width: 1200,
         height: 630,
-        alt: "Kaneo",
+        alt: "Project by Elivate",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Kaneo - All you need. Nothing you don't.",
+    title: "Project by Elivate - All you need. Nothing you don't.",
     description:
       "Open source project management that works for you, not against you. Self-hosted, simple, and powerful.",
     images: ["/images/hero.png"],
@@ -63,15 +63,15 @@ export const metadata: Metadata = {
     apple: "/apple-touch-icon.png",
   },
   category: "productivity",
-  creator: "Kaneo",
-  publisher: "Kaneo",
+  creator: "Project by Elivate",
+  publisher: "Project by Elivate",
 };
 
 const jsonLd = [
   {
     "@context": "https://schema.org",
     "@type": "Organization",
-    name: "Kaneo",
+    name: "Project by Elivate",
     url: "https://kaneo.app",
     logo: "https://kaneo.app/logo-512.png",
     sameAs: ["https://github.com/usekaneo/kaneo"],
@@ -79,14 +79,14 @@ const jsonLd = [
   {
     "@context": "https://schema.org",
     "@type": "WebSite",
-    name: "Kaneo",
+    name: "Project by Elivate",
     url: "https://kaneo.app",
     inLanguage: "en",
   },
   {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
-    name: "Kaneo",
+    name: "Project by Elivate",
     applicationCategory: "BusinessApplication",
     operatingSystem: "Web, Linux, macOS, Windows",
     description:

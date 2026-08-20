@@ -5,7 +5,8 @@ import { Navbar } from "@/components/landing/navbar";
 
 export const metadata: Metadata = {
   title: "Privacy Policy",
-  description: "How Kaneo Cloud collects, uses, and protects your data.",
+  description:
+    "How Project by Elivate Cloud collects, uses, and protects your data.",
   alternates: {
     canonical: "/privacy",
   },
@@ -38,12 +39,13 @@ export default function PrivacyPage() {
                 Last updated: July 28, 2026
               </p>
               <p className="mt-5 text-foreground/85 text-base leading-relaxed">
-                This policy describes how the Kaneo website (kaneo.app) and the
-                managed Kaneo Cloud service (cloud.kaneo.app) handle your data.
-                The service is operated by Andrej Acevski (sole proprietor,
-                Macedonia), referred to as “we” below. If you self-host Kaneo,
-                this policy does not apply: your instance is under your control
-                and we receive no data from it.
+                This policy describes how the Project by Elivate website
+                (kaneo.app) and the managed Project by Elivate Cloud service
+                (cloud.kaneo.app) handle your data. The service is operated by
+                Andrej Acevski (sole proprietor, Macedonia), referred to as “we”
+                below. If you self-host Project by Elivate, this policy does not
+                apply: your instance is under your control and we receive no
+                data from it.
               </p>
             </div>
 
@@ -52,10 +54,10 @@ export default function PrivacyPage() {
                 <strong className="font-medium text-foreground">
                   Account data.
                 </strong>{" "}
-                When you create a Kaneo Cloud account we store your name, email
-                address, and, if you sign in with GitHub, Google, or Discord,
-                the basic profile information those providers share (such as
-                your avatar). We never receive your passwords for those
+                When you create a Project by Elivate Cloud account we store your
+                name, email address, and, if you sign in with GitHub, Google, or
+                Discord, the basic profile information those providers share
+                (such as your avatar). We never receive your passwords for those
                 providers.
               </p>
               <p>
@@ -70,11 +72,12 @@ export default function PrivacyPage() {
                 <strong className="font-medium text-foreground">
                   Payment data.
                 </strong>{" "}
-                Payments for Kaneo Cloud are processed by Creem (creem.io)
-                acting as merchant of record. Creem collects and processes your
-                payment details under its own privacy policy; we never see or
-                store your card number. We receive only what is needed to manage
-                your subscription (such as plan, status, and billing country).
+                Payments for Project by Elivate Cloud are processed by Creem
+                (creem.io) acting as merchant of record. Creem collects and
+                processes your payment details under its own privacy policy; we
+                never see or store your card number. We receive only what is
+                needed to manage your subscription (such as plan, status, and
+                billing country).
               </p>
               <p>
                 <strong className="font-medium text-foreground">
@@ -109,10 +112,10 @@ export default function PrivacyPage() {
 
             <Section title="Where data lives">
               <p>
-                Kaneo Cloud runs on servers in the European Union (Hetzner,
-                Germany and Finland). Encrypted backups are stored with
-                Cloudflare (R2). The following subprocessors help us run the
-                service:
+                Project by Elivate Cloud runs on servers in the European Union
+                (Hetzner, Germany and Finland). Encrypted backups are stored
+                with Cloudflare (R2). The following subprocessors help us run
+                the service:
               </p>
               <ul className="list-disc space-y-1.5 pl-5">
                 <li>Hetzner Online GmbH: hosting (EU)</li>
@@ -159,9 +162,9 @@ export default function PrivacyPage() {
 
             <Section title="Cookies">
               <p>
-                The marketing website sets no cookies. Kaneo Cloud uses only
-                essential cookies required to keep you signed in. There are no
-                advertising or cross-site tracking cookies.
+                The marketing website sets no cookies. Project by Elivate Cloud
+                uses only essential cookies required to keep you signed in.
+                There are no advertising or cross-site tracking cookies.
               </p>
             </Section>
 
