@@ -1,5 +1,25 @@
+import {
+  closestCenter,
+  DndContext,
+  type DragEndEvent,
+  MouseSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import {
+  restrictToParentElement,
+  restrictToVerticalAxis,
+} from "@dnd-kit/modifiers";
+import {
+  arrayMove,
+  SortableContext,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { CheckCircle2, Circle, GripVertical, Plus, Trash2 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { type CSSProperties, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,6 +46,186 @@ type ColumnEditorProps = {
   projectId: string;
 };
 
+function SortableColumnItem({
+  id,
+  col,
+  canEdit,
+  handleRename,
+  handleToggleFinal,
+  handleDelete,
+  handleUpdateIcon,
+  iconPickerColumnId,
+  setIconPickerColumnId,
+  iconSearch,
+  setIconSearch,
+  filteredIcons,
+  t,
+}: {
+  id: string;
+  col: any;
+  canEdit: boolean;
+  handleRename: (id: string, name: string) => void;
+  handleToggleFinal: (id: string, isFinal: boolean) => void;
+  handleDelete: (id: string) => void;
+  handleUpdateIcon: (id: string, icon: string) => void;
+  iconPickerColumnId: string | null;
+  setIconPickerColumnId: (id: string | null) => void;
+  iconSearch: string;
+  setIconSearch: (search: string) => void;
+  filteredIcons: [string, any][];
+  t: any;
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id });
+
+  const style: CSSProperties = {
+    transform: CSS.Translate.toString(transform),
+    transition,
+    zIndex: isDragging ? 10 : undefined,
+    position: "relative",
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={cn(
+        "flex items-center gap-2 p-2 border border-border rounded-md bg-sidebar hover:bg-sidebar-accent/50 transition-colors",
+        isDragging && "opacity-50 shadow-lg border-primary/50",
+      )}
+    >
+      <div {...attributes} {...listeners} className="cursor-grab shrink-0">
+        <GripVertical className="w-4 h-4 text-muted-foreground" />
+      </div>
+      <Popover
+        open={iconPickerColumnId === col.id}
+        onOpenChange={(open) => {
+          setIconPickerColumnId(open ? col.id : null);
+          if (!open) setIconSearch("");
+        }}
+        modal={true}
+      >
+        <PopoverTrigger asChild>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="h-8 w-8 p-0 shrink-0"
+            title={t("settings:columnEditor.pickIconTitle")}
+            disabled={!canEdit}
+          >
+            {getColumnIcon(col.slug, col.isFinal, col.icon)}
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-80" align="start">
+          <div className="space-y-2">
+            <Input
+              value={iconSearch}
+              onChange={(e) => setIconSearch(e.target.value)}
+              placeholder={t("settings:columnEditor.searchIconsPlaceholder")}
+              className="h-8 text-xs"
+            />
+            <div className="max-h-[280px] overflow-y-auto pr-1">
+              <div className="grid grid-cols-6 gap-1.5">
+                {filteredIcons.map(([iconName, Icon]) => {
+                  const selectedIconName =
+                    col.icon ||
+                    DEFAULT_COLUMN_ICON_NAMES[
+                      col.slug as keyof typeof DEFAULT_COLUMN_ICON_NAMES
+                    ];
+                  const isSelected = selectedIconName === iconName;
+                  return (
+                    <Button
+                      key={iconName}
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleUpdateIcon(col.id, iconName)}
+                      className={cn(
+                        "h-10 items-center justify-center rounded-md p-0",
+                        isSelected &&
+                          "bg-sidebar-accent text-sidebar-accent-foreground",
+                      )}
+                      title={iconName}
+                    >
+                      <Icon className="h-4 w-4" />
+                    </Button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </PopoverContent>
+      </Popover>
+      <Input
+        defaultValue={col.name}
+        className="h-8 text-sm flex-1"
+        disabled={!canEdit}
+        onBlur={(e) => {
+          if (e.target.value !== col.name) {
+            handleRename(col.id, e.target.value);
+          }
+        }}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            e.currentTarget.blur();
+          }
+        }}
+      />
+      <div className="flex items-center gap-1.5 shrink-0">
+        <div
+          className="flex items-center gap-2"
+          title={t("settings:columnEditor.doneColumnTooltip")}
+        >
+          {col.isFinal ? (
+            <CheckCircle2 className="w-3.5 h-3.5 text-muted-foreground" />
+          ) : (
+            <Circle className="w-3.5 h-3.5 text-muted-foreground" />
+          )}
+          <span className="text-xs text-muted-foreground whitespace-nowrap">
+            {t("settings:columnEditor.doneColumn")}
+          </span>
+          <Switch
+            checked={col.isFinal}
+            onCheckedChange={
+              canEdit
+                ? (checked) => handleToggleFinal(col.id, checked)
+                : undefined
+            }
+            disabled={!canEdit}
+            aria-label={t("settings:columnEditor.markDoneAria", {
+              name: col.name,
+            })}
+            className="scale-75"
+          />
+          <span className="text-[11px] text-muted-foreground w-8">
+            {col.isFinal
+              ? t("settings:columnEditor.on")
+              : t("settings:columnEditor.off")}
+          </span>
+        </div>
+        {canEdit && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
+            onClick={() => handleDelete(col.id)}
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+          </Button>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function ColumnEditor({ projectId }: ColumnEditorProps) {
   const { t } = useTranslation();
   const { data: columns, isLoading } = useGetColumns(projectId);
@@ -42,14 +242,36 @@ export default function ColumnEditor({ projectId }: ColumnEditorProps) {
   );
   const [newIconPickerOpen, setNewIconPickerOpen] = useState(false);
   const [iconSearch, setIconSearch] = useState("");
-  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
-  const dragPreviewRef = useRef<HTMLDivElement | null>(null);
+
+  const [droppedOrder, setDroppedOrder] = useState<string[] | null>(null);
+
+  const orderedColumns = useMemo(() => {
+    if (!columns || !droppedOrder) return columns;
+
+    const rank = new Map(droppedOrder.map((id, index) => [id, index]));
+
+    return [...columns].sort(
+      (a, b) =>
+        (rank.get(a.id) ?? Number.MAX_SAFE_INTEGER) -
+        (rank.get(b.id) ?? Number.MAX_SAFE_INTEGER),
+    );
+  }, [columns, droppedOrder]);
 
   useEffect(() => {
-    return () => {
-      dragPreviewRef.current?.remove();
-    };
-  }, []);
+    if (!droppedOrder || !columns) return;
+    if (columns.map((col) => col.id).join() === droppedOrder.join()) {
+      setDroppedOrder(null);
+    }
+  }, [columns, droppedOrder]);
+
+  const sensors = useSensors(
+    useSensor(MouseSensor, {
+      activationConstraint: { distance: 8 },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: { delay: 200, tolerance: 8 },
+    }),
+  );
 
   const handleCreate = async () => {
     if (!newColumnName.trim()) return;
@@ -128,67 +350,27 @@ export default function ColumnEditor({ projectId }: ColumnEditorProps) {
     }
   };
 
-  const handleDragStart = (
-    e: React.DragEvent<HTMLDivElement>,
-    index: number,
-  ) => {
-    setDraggedIndex(index);
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
 
-    dragPreviewRef.current?.remove();
+    if (!over || active.id === over.id || !orderedColumns) return;
 
-    const sourceElement = e.currentTarget;
-    const sourceRect = sourceElement.getBoundingClientRect();
+    const oldIndex = orderedColumns.findIndex((col) => col.id === active.id);
+    const newIndex = orderedColumns.findIndex((col) => col.id === over.id);
 
-    // Use an isolated clone so the drag image only captures the selected row.
-    const dragPreview = sourceElement.cloneNode(true) as HTMLDivElement;
+    if (oldIndex === -1 || newIndex === -1) return;
 
-    dragPreview.setAttribute("aria-hidden", "true");
-    dragPreview.inert = true;
+    const reordered = arrayMove(orderedColumns, oldIndex, newIndex);
 
-    Object.assign(dragPreview.style, {
-      position: "fixed",
-      top: "-10000px",
-      left: "-10000px",
-      width: `${sourceRect.width}px`,
-      height: `${sourceRect.height}px`,
-      margin: "0",
-      boxSizing: "border-box",
-      overflow: "hidden",
-      pointerEvents: "none",
-      transform: "none",
-      contain: "layout paint",
-    });
-
-    document.body.appendChild(dragPreview);
-    dragPreviewRef.current = dragPreview;
-
-    e.dataTransfer.effectAllowed = "move";
-    e.dataTransfer.setData("text/plain", String(index));
-    e.dataTransfer.setDragImage(
-      dragPreview,
-      e.clientX - sourceRect.left,
-      e.clientY - sourceRect.top,
-    );
-  };
-
-  const handleDragOver = (e: React.DragEvent, index: number) => {
-    e.preventDefault();
-    if (draggedIndex === null || draggedIndex === index || !columns) return;
-
-    const reordered = [...columns];
-    const [removed] = reordered.splice(draggedIndex, 1);
-    reordered.splice(index, 0, removed);
+    setDroppedOrder(reordered.map((col) => col.id));
 
     const updates = reordered.map((col, i) => ({ id: col.id, position: i }));
-    reorderColumns({ projectId, columns: updates });
-    setDraggedIndex(index);
-  };
-
-  const handleDragEnd = () => {
-    setDraggedIndex(null);
-
-    dragPreviewRef.current?.remove();
-    dragPreviewRef.current = null;
+    reorderColumns({ projectId, columns: updates }, {
+      onError: () => {
+        setDroppedOrder(null);
+        toast.error(t("settings:columnEditor.toastUpdateError"));
+      },
+    });
   };
 
   const filteredIcons = Object.entries(columnIcons).filter(([iconName]) =>
@@ -205,143 +387,38 @@ export default function ColumnEditor({ projectId }: ColumnEditorProps) {
 
   return (
     <div className="space-y-3">
-      <div className="space-y-1">
-        {columns?.map((col, index) => (
-          // biome-ignore lint/a11y/useSemanticElements: false positive for role="listitem"
-          <div
-            key={col.id}
-            role="listitem"
-            draggable={canEdit}
-            onDragStart={(e) => handleDragStart(e, index)}
-            onDragOver={(e) => handleDragOver(e, index)}
-            onDragEnd={handleDragEnd}
-            className="flex items-center gap-2 p-2 border border-border rounded-md bg-sidebar hover:bg-sidebar-accent/50 transition-colors"
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={handleDragEnd}
+        modifiers={[restrictToVerticalAxis, restrictToParentElement]}
+      >
+        <div className="space-y-1">
+          <SortableContext
+            items={orderedColumns?.map((col) => col.id) ?? []}
+            strategy={verticalListSortingStrategy}
           >
-            <GripVertical className="w-4 h-4 text-muted-foreground cursor-grab shrink-0" />
-            <Popover
-              open={iconPickerColumnId === col.id}
-              onOpenChange={(open) => {
-                setIconPickerColumnId(open ? col.id : null);
-                if (!open) setIconSearch("");
-              }}
-              modal={true}
-            >
-              <PopoverTrigger asChild>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 w-8 p-0 shrink-0"
-                  title={t("settings:columnEditor.pickIconTitle")}
-                  disabled={!canEdit}
-                >
-                  {getColumnIcon(col.slug, col.isFinal, col.icon)}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-80" align="start">
-                <div className="space-y-2">
-                  <Input
-                    value={iconSearch}
-                    onChange={(e) => setIconSearch(e.target.value)}
-                    placeholder={t(
-                      "settings:columnEditor.searchIconsPlaceholder",
-                    )}
-                    className="h-8 text-xs"
-                  />
-                  <div className="max-h-[280px] overflow-y-auto pr-1">
-                    <div className="grid grid-cols-6 gap-1.5">
-                      {filteredIcons.map(([iconName, Icon]) => {
-                        const selectedIconName =
-                          col.icon ||
-                          DEFAULT_COLUMN_ICON_NAMES[
-                            col.slug as keyof typeof DEFAULT_COLUMN_ICON_NAMES
-                          ];
-                        const isSelected = selectedIconName === iconName;
-                        return (
-                          <Button
-                            key={iconName}
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleUpdateIcon(col.id, iconName)}
-                            className={cn(
-                              "h-10 items-center justify-center rounded-md p-0",
-                              isSelected &&
-                                "bg-sidebar-accent text-sidebar-accent-foreground",
-                            )}
-                            title={iconName}
-                          >
-                            <Icon className="h-4 w-4" />
-                          </Button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </div>
-              </PopoverContent>
-            </Popover>
-            <Input
-              defaultValue={col.name}
-              className="h-8 text-sm flex-1"
-              disabled={!canEdit}
-              onBlur={(e) => {
-                if (e.target.value !== col.name) {
-                  handleRename(col.id, e.target.value);
-                }
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  e.currentTarget.blur();
-                }
-              }}
-            />
-            <div className="flex items-center gap-1.5 shrink-0">
-              <div
-                className="flex items-center gap-2"
-                title={t("settings:columnEditor.doneColumnTooltip")}
-              >
-                {col.isFinal ? (
-                  <CheckCircle2 className="w-3.5 h-3.5 text-muted-foreground" />
-                ) : (
-                  <Circle className="w-3.5 h-3.5 text-muted-foreground" />
-                )}
-                <span className="text-xs text-muted-foreground whitespace-nowrap">
-                  {t("settings:columnEditor.doneColumn")}
-                </span>
-                <Switch
-                  checked={col.isFinal}
-                  onCheckedChange={
-                    canEdit
-                      ? (checked) => handleToggleFinal(col.id, checked)
-                      : undefined
-                  }
-                  disabled={!canEdit}
-                  aria-label={t("settings:columnEditor.markDoneAria", {
-                    name: col.name,
-                  })}
-                  className="scale-75"
-                />
-                <span className="text-[11px] text-muted-foreground w-8">
-                  {col.isFinal
-                    ? t("settings:columnEditor.on")
-                    : t("settings:columnEditor.off")}
-                </span>
-              </div>
-              {canEdit && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
-                  onClick={() => handleDelete(col.id)}
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                </Button>
-              )}
-            </div>
-          </div>
-        ))}
-      </div>
+            {orderedColumns?.map((col) => (
+              <SortableColumnItem
+                key={col.id}
+                id={col.id}
+                col={col}
+                canEdit={canEdit}
+                handleRename={handleRename}
+                handleToggleFinal={handleToggleFinal}
+                handleDelete={handleDelete}
+                handleUpdateIcon={handleUpdateIcon}
+                iconPickerColumnId={iconPickerColumnId}
+                setIconPickerColumnId={setIconPickerColumnId}
+                iconSearch={iconSearch}
+                setIconSearch={setIconSearch}
+                filteredIcons={filteredIcons}
+                t={t}
+              />
+            ))}
+          </SortableContext>
+        </div>
+      </DndContext>
 
       {canEdit && (
         <div className="flex items-center gap-2">
