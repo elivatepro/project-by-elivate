@@ -22,6 +22,74 @@ export const projectSchema = v.object({
   position: v.number(),
 });
 
+export const workspaceOverviewSchema = v.object({
+  summary: v.object({
+    projectCount: v.number(),
+    totalTasks: v.number(),
+    completedTasks: v.number(),
+    overdueTasks: v.number(),
+    dueSoonTasks: v.number(),
+    completionPercentage: v.number(),
+  }),
+  statusBreakdown: v.array(
+    v.object({
+      key: v.picklist(["completed", "inProgress", "planned"] as const),
+      count: v.number(),
+    }),
+  ),
+  taskCreationTrend: v.array(
+    v.object({
+      weekStart: v.date(),
+      count: v.number(),
+    }),
+  ),
+  projectProgress: v.array(
+    v.object({
+      id: v.string(),
+      name: v.string(),
+      icon: v.nullable(v.string()),
+      totalTasks: v.number(),
+      completedTasks: v.number(),
+      overdueTasks: v.number(),
+      completionPercentage: v.number(),
+    }),
+  ),
+  assigneeWorkload: v.array(
+    v.object({
+      id: v.nullable(v.string()),
+      name: v.string(),
+      image: v.nullable(v.string()),
+      totalTasks: v.number(),
+      openTasks: v.number(),
+      completedTasks: v.number(),
+    }),
+  ),
+  upcomingTasks: v.array(
+    v.object({
+      id: v.string(),
+      projectId: v.string(),
+      projectName: v.string(),
+      title: v.string(),
+      status: v.string(),
+      priority: v.string(),
+      dueDate: v.nullable(v.date()),
+      assigneeName: v.nullable(v.string()),
+    }),
+  ),
+  recentActivity: v.array(
+    v.object({
+      id: v.string(),
+      taskId: v.string(),
+      taskTitle: v.string(),
+      projectId: v.string(),
+      projectName: v.string(),
+      type: v.string(),
+      createdAt: v.date(),
+      userName: v.nullable(v.string()),
+    }),
+  ),
+});
+
 export const taskSchema = v.object({
   id: v.string(),
   projectId: v.string(),

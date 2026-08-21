@@ -1345,6 +1345,7 @@
 		},
 		"page": {
 			"projectsTitle": "Projects",
+			"overviewTitle": "Overview",
 			"settingsTitle": "Settings",
 			"backToWorkspace": "Back to Workspace",
 			"settingsWorkspaceTab": "Workspace"
@@ -1998,6 +1999,51 @@
 		}
 	},
 	"workspace": {
+		"overview": {
+			"pageTitle": "Overview",
+			"summaryLabel": "Workspace summary",
+			"errorTitle": "Overview unavailable",
+			"errorDescription": "We couldn't load the workspace overview. Try refreshing the page.",
+			"emptyProjects": "No projects have tasks yet.",
+			"emptyWorkload": "No assigned work yet.",
+			"emptyUpcoming": "No upcoming work needs attention.",
+			"emptyActivity": "No activity has been recorded yet.",
+			"emptyTrend": "No task activity in the last six weeks.",
+			"noDueDate": "No due date",
+			"trendChartLabel": "Tasks created over the last six weeks",
+			"metrics": {
+				"projects": "Projects",
+				"active": "active",
+				"openTasks": "Open tasks",
+				"total": "total",
+				"overdue": "overdue",
+				"needsAttention": "needs attention",
+				"completion": "Completion",
+				"completed": "completed",
+				"open": "open",
+				"tasks": "tasks"
+			},
+			"sections": {
+				"taskFlow": "Task flow",
+				"taskFlowDescription": "Work added to the workspace over the last six weeks",
+				"status": "Task status",
+				"statusDescription": "Current distribution across active projects",
+				"projectProgress": "Project progress",
+				"projectProgressDescription": "Completion and overdue work by project",
+				"workload": "Workload",
+				"workloadDescription": "Open tasks assigned across the workspace",
+				"upcoming": "Upcoming work",
+				"upcomingDescription": "Overdue and scheduled tasks that need attention",
+				"activity": "Recent activity",
+				"activityDescription": "The latest changes across the workspace"
+			},
+			"status": {
+				"planned": "Planned",
+				"inProgress": "In progress",
+				"completed": "Completed",
+				"chartLabel": "Task status breakdown"
+			}
+		},
 		"projects": {
 			"pageTitle": "Projects",
 			"createProject": "Create project",

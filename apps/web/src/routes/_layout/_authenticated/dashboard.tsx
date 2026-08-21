@@ -16,7 +16,7 @@ function DashboardLayoutComponent() {
   return (
     <>
       <PageTitle
-        title={t("navigation:page.projectsTitle")}
+        title={t("navigation:page.overviewTitle")}
         hideAppName={!workspace?.name}
       />
       <Outlet />

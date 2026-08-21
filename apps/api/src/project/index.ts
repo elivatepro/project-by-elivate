@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { describeRoute, resolver, validator } from "hono-openapi";
 import * as v from "valibot";
 import { requireEntitlement } from "../billing/require-entitlement-middleware";
-import { projectSchema } from "../schemas";
+import { projectSchema, workspaceOverviewSchema } from "../schemas";
 import { requireWorkspacePermission } from "../utils/require-workspace-permission";
 import { workspaceAccess } from "../utils/workspace-access-middleware";
 import archiveProjectCtrl from "./controllers/archive-project";
@@ -10,6 +10,7 @@ import createProjectCtrl from "./controllers/create-project";
 import deleteProjectCtrl from "./controllers/delete-project";
 import getProjectCtrl from "./controllers/get-project";
 import getProjectsCtrl from "./controllers/get-projects";
+import getWorkspaceOverviewCtrl from "./controllers/get-workspace-overview";
 import reorderProjectsCtrl from "./controllers/reorder-projects";
 import unarchiveProjectCtrl from "./controllers/unarchive-project";
 import updateProjectCtrl from "./controllers/update-project";
@@ -20,6 +21,31 @@ const project = new Hono<{
     workspaceId: string;
   };
 }>()
+  .get(
+    "/overview",
+    describeRoute({
+      operationId: "getWorkspaceOverview",
+      tags: ["Projects"],
+      description: "Get workspace-wide overview metrics",
+      responses: {
+        200: {
+          description: "Workspace overview metrics and visual summaries",
+          content: {
+            "application/json": {
+              schema: resolver(workspaceOverviewSchema),
+            },
+          },
+        },
+      },
+    }),
+    validator("query", v.object({ workspaceId: v.string() })),
+    workspaceAccess.fromQuery(),
+    async (c) => {
+      const workspaceId = c.get("workspaceId");
+      const overview = await getWorkspaceOverviewCtrl(workspaceId);
+      return c.json(overview);
+    },
+  )
   .get(
     "/",
     describeRoute({
