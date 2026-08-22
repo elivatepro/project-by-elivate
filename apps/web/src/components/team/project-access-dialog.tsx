@@ -9,6 +9,7 @@ import { Checkbox } from "../ui/checkbox";
 import {
   Dialog,
   DialogClose,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogPanel,
@@ -73,9 +74,9 @@ function ProjectAccessDialog({
           </DialogTitle>
         </DialogHeader>
         <DialogPanel className="space-y-3">
-          <p className="text-sm text-muted-foreground">
+          <DialogDescription>
             {t("team:projectAccess.description")}
-          </p>
+          </DialogDescription>
           <div className="max-h-64 space-y-1 overflow-y-auto rounded-lg border p-2">
             {access?.projects.length ? (
               access.projects.map((project) => {

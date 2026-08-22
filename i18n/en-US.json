@@ -10,6 +10,7 @@
 			"markAllRead": "Mark all read",
 			"remove": "Remove",
 			"reset": "Reset",
+			"save": "Save",
 			"filter": "Filter",
 			"clearAllFilters": "Clear all filters"
 		},
@@ -2009,6 +2010,10 @@
 			"emptyUpcoming": "No upcoming work needs attention.",
 			"emptyActivity": "No activity has been recorded yet.",
 			"emptyTrend": "No task activity in the last six weeks.",
+			"trendSummary": "Peak week: {{count}} tasks, week of {{week}}.",
+			"trendDataTable": "Task creation by week",
+			"trendWeek": "Week starting",
+			"trendTasksCreated": "Tasks created",
 			"noDueDate": "No due date",
 			"trendChartLabel": "Tasks created over the last six weeks",
 			"metrics": {

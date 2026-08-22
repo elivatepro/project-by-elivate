@@ -1,4 +1,5 @@
 import { useNavigate } from "@tanstack/react-router";
+import type { TFunction } from "i18next";
 import {
   Activity,
   AlertTriangle,
@@ -9,7 +10,7 @@ import {
   Plus,
   Users,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useId, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import WorkspaceLayout from "@/components/common/workspace-layout";
 import PageTitle from "@/components/page-title";
@@ -102,7 +103,7 @@ function StatusDonut({
   t,
 }: {
   data: WorkspaceOverviewData["statusBreakdown"];
-  t: (key: string) => string;
+  t: TFunction;
 }) {
   const total = data.reduce((sum, item) => sum + item.count, 0);
   const radius = 42;
@@ -184,87 +185,160 @@ function StatusDonut({
   );
 }
 
+function getWeekStart(value: Date | string | number) {
+  const date = new Date(value);
+  const daysSinceMonday = (date.getUTCDay() + 6) % 7;
+  date.setUTCDate(date.getUTCDate() - daysSinceMonday);
+  date.setUTCHours(0, 0, 0, 0);
+  return date;
+}
+
+function getWeekKey(value: Date | string | number) {
+  return getWeekStart(value).toISOString().slice(0, 10);
+}
+
 function CreationTrend({
   data,
   t,
 }: {
   data: WorkspaceOverviewData["taskCreationTrend"];
-  t: (key: string) => string;
+  t: TFunction;
 }) {
-  const max = Math.max(...data.map((item) => item.count), 1);
-  const points = data
-    .map((item, index) => {
-      const x = data.length === 1 ? 50 : (index / (data.length - 1)) * 100;
-      const y = 92 - (item.count / max) * 72;
-      return `${x},${y}`;
-    })
-    .join(" ");
+  const chartId = useId();
+  const trendData = useMemo(() => {
+    const countsByWeek = new Map(
+      data.map((item) => [getWeekKey(item.weekStart), item.count]),
+    );
+    const currentWeekStart = getWeekStart(new Date());
 
-  if (!data.length) {
+    return Array.from({ length: 6 }, (_, index) => {
+      const weekStart = new Date(currentWeekStart);
+      weekStart.setUTCDate(currentWeekStart.getUTCDate() - (5 - index) * 7);
+      return {
+        weekStart,
+        count: countsByWeek.get(getWeekKey(weekStart)) ?? 0,
+      };
+    });
+  }, [data]);
+
+  const max = Math.max(...trendData.map((item) => item.count), 1);
+  const axisLabels = max > 1 ? [max, Math.ceil(max / 2), 0] : [max, 0];
+  const peak = trendData.reduce(
+    (currentPeak, item) =>
+      item.count > currentPeak.count ? item : currentPeak,
+    trendData[0],
+  );
+
+  if (!data.length || !trendData.some((item) => item.count > 0)) {
     return (
-      <p className="py-12 text-center text-sm text-muted-foreground">
-        {t("workspace:overview.emptyTrend")}
-      </p>
+      <div
+        className="rounded-lg border border-dashed px-4 py-10 text-center"
+        role="status"
+      >
+        <ListTodo className="mx-auto mb-3 size-5 text-muted-foreground" />
+        <p className="text-sm text-muted-foreground">
+          {t("workspace:overview.emptyTrend")}
+        </p>
+      </div>
     );
   }
 
   return (
-    <div className="space-y-3">
-      <div className="relative h-44 w-full">
-        <svg
-          viewBox="0 0 100 100"
-          preserveAspectRatio="none"
-          className="size-full overflow-visible"
-          role="img"
-          aria-label={t("workspace:overview.trendChartLabel")}
-        >
-          {[20, 44, 68, 92].map((y) => (
-            <line
-              key={y}
-              x1="0"
-              x2="100"
-              y1={y}
-              y2={y}
-              stroke="var(--border)"
-              strokeDasharray="1 3"
-            />
+    <figure aria-labelledby={`${chartId}-title`} className="space-y-3">
+      <figcaption id={`${chartId}-title`} className="sr-only">
+        {t("workspace:overview.trendChartLabel")}
+      </figcaption>
+      <p className="text-xs text-muted-foreground">
+        {t("workspace:overview.trendSummary", {
+          count: peak.count,
+          week: formatDateShort(peak.weekStart),
+        })}
+      </p>
+      <div className="rounded-lg border bg-muted/20 p-3 sm:p-4">
+        <div className="grid grid-cols-[2rem_minmax(0,1fr)] gap-3">
+          <div
+            aria-hidden="true"
+            className="flex h-48 flex-col justify-between pb-8 text-right text-[10px] tabular-nums text-muted-foreground"
+          >
+            {axisLabels.map((label) => (
+              <span key={label}>{label}</span>
+            ))}
+          </div>
+          <div className="relative h-48 min-w-0">
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-x-0 top-0 flex h-36 flex-col justify-between"
+            >
+              {axisLabels.map((label) => (
+                <span
+                  className="border-t border-dashed border-border/80"
+                  key={label}
+                />
+              ))}
+            </div>
+            <div
+              aria-hidden="true"
+              className="relative flex h-36 items-end gap-1.5 sm:gap-2"
+            >
+              {trendData.map((item) => {
+                const height = item.count
+                  ? Math.max((item.count / max) * 100, 8)
+                  : 0;
+                return (
+                  <div
+                    className="flex h-full min-w-0 flex-1 items-end justify-center"
+                    key={item.weekStart.toISOString()}
+                  >
+                    <span className="relative flex h-full w-full max-w-10 items-end">
+                      <span
+                        className="block w-full rounded-t-md bg-chart-1 transition-[height] duration-300 ease-out motion-reduce:transition-none"
+                        style={{ height: `${height}%` }}
+                      />
+                      <span
+                        className="absolute inset-x-0 -translate-y-1 text-center text-[11px] font-medium tabular-nums text-foreground"
+                        style={{ bottom: `${height}%` }}
+                      >
+                        {item.count}
+                      </span>
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+            <div
+              aria-hidden="true"
+              className="absolute inset-x-0 bottom-0 flex gap-1.5 sm:gap-2"
+            >
+              {trendData.map((item) => (
+                <span
+                  className="min-w-0 flex-1 truncate text-center text-[10px] text-muted-foreground"
+                  key={item.weekStart.toISOString()}
+                >
+                  {formatDateShort(item.weekStart)}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+      <table className="sr-only">
+        <caption>{t("workspace:overview.trendDataTable")}</caption>
+        <thead>
+          <tr>
+            <th scope="col">{t("workspace:overview.trendWeek")}</th>
+            <th scope="col">{t("workspace:overview.trendTasksCreated")}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {trendData.map((item) => (
+            <tr key={item.weekStart.toISOString()}>
+              <th scope="row">{formatDateShort(item.weekStart)}</th>
+              <td>{item.count}</td>
+            </tr>
           ))}
-          <polyline
-            points={points}
-            fill="none"
-            stroke="var(--chart-1)"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2.5"
-            vectorEffect="non-scaling-stroke"
-          />
-          {data.map((item, index) => {
-            const x =
-              data.length === 1 ? 50 : (index / (data.length - 1)) * 100;
-            const y = 92 - (item.count / max) * 72;
-            return (
-              <circle
-                key={item.weekStart.toString()}
-                cx={x}
-                cy={y}
-                r="2.5"
-                fill="var(--card)"
-                stroke="var(--chart-1)"
-                strokeWidth="1.5"
-                vectorEffect="non-scaling-stroke"
-              />
-            );
-          })}
-        </svg>
-      </div>
-      <div className="flex justify-between gap-2 text-[11px] text-muted-foreground">
-        {data.map((item) => (
-          <span key={item.weekStart.toString()}>
-            {formatDateShort(item.weekStart)}
-          </span>
-        ))}
-      </div>
-    </div>
+        </tbody>
+      </table>
+    </figure>
   );
 }
 

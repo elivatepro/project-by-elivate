@@ -13,7 +13,9 @@ import ProjectAccessDialog from "./project-access-dialog";
 const mutateAsync = vi.fn();
 
 vi.mock("react-i18next", () => ({
-  useTranslation: () => ({ t: (key: string) => key }),
+  useTranslation: () => ({
+    t: (key: string) => (key === "common:actions.save" ? "Save" : key),
+  }),
   initReactI18next: { type: "3rdParty", init: vi.fn() },
 }));
 
@@ -61,9 +63,7 @@ describe("ProjectAccessDialog", () => {
       expect(screen.getAllByRole("checkbox")[0]).toBeChecked(),
     );
     fireEvent.click(screen.getAllByRole("checkbox")[0]);
-    fireEvent.click(
-      screen.getByRole("button", { name: "common:actions.save" }),
-    );
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
 
     await waitFor(() =>
       expect(mutateAsync).toHaveBeenCalledWith({
