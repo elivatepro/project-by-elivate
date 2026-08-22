@@ -7,6 +7,7 @@ import {
   taskTable,
 } from "../../database/schema";
 import { publishEvent } from "../../events";
+import { requireProjectAccess } from "../../utils/project-access";
 
 async function createTaskRelation({
   sourceTaskId,
@@ -66,6 +67,9 @@ async function createTaskRelation({
   if (!targetTask) {
     throw new HTTPException(404, { message: "Target task not found" });
   }
+
+  await requireProjectAccess(userId, sourceTask.projectId);
+  await requireProjectAccess(userId, targetTask.projectId);
 
   const existing = await db
     .select({ id: taskRelationTable.id })

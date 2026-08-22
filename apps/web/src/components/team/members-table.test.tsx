@@ -29,6 +29,7 @@ vi.mock("@/lib/toast", () => ({
 
 vi.mock("react-i18next", () => ({
   useTranslation: () => ({ t: (key: string) => key }),
+  initReactI18next: { type: "3rdParty", init: vi.fn() },
 }));
 
 vi.mock("@/lib/format", () => ({
@@ -50,8 +51,16 @@ vi.mock(
   }),
 );
 
+vi.mock("@/hooks/mutations/workspace-user/use-replace-project-access", () => ({
+  default: () => ({ mutateAsync: vi.fn(), isPending: false }),
+}));
+
 vi.mock("@/hooks/queries/workspace/use-workspace-roles", () => ({
   default: () => ({ data: [] }),
+}));
+
+vi.mock("@/hooks/queries/workspace-users/use-get-project-access", () => ({
+  default: () => ({ data: undefined }),
 }));
 
 const canInviteUsers = vi.fn(() => true);
@@ -61,6 +70,7 @@ vi.mock("@/hooks/use-workspace-permission", () => ({
     canManageTeam: () => true,
     canRemoveMembers: () => true,
     canInviteUsers: () => canInviteUsers(),
+    isAdmin: false,
   }),
 }));
 

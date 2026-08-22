@@ -60,7 +60,7 @@ const label = new Hono<{
     workspaceAccess.fromParam(),
     async (c) => {
       const { workspaceId } = c.req.valid("param");
-      const labels = await getLabelsByWorkspaceId(workspaceId);
+      const labels = await getLabelsByWorkspaceId(workspaceId, c.get("userId"));
       return c.json(labels);
     },
   )
@@ -138,6 +138,7 @@ const label = new Hono<{
     validator("param", v.object({ id: v.string() })),
     validator("json", v.object({ taskId: v.string() })),
     workspaceAccess.fromLabel(),
+    workspaceAccess.fromTaskId(),
     requireWorkspacePermission({ label: ["update"] }),
     async (c) => {
       const { id } = c.req.valid("param");

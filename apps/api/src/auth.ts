@@ -33,7 +33,7 @@ import {
 import type { AccessControl } from "better-auth/plugins/access";
 import type { UserWithAnonymous } from "better-auth/plugins/anonymous";
 import { config } from "dotenv-mono";
-import { count, eq, sql } from "drizzle-orm";
+import { and, count, eq, inArray, sql } from "drizzle-orm";
 import {
   findBillableWorkspaces,
   formatBillableWorkspacesMessage,
@@ -53,6 +53,7 @@ import { getGithubSsoOAuthCredentials } from "./utils/github-sso-env";
 import { isCloud } from "./utils/is-cloud";
 import { isDisposableEmail } from "./utils/is-disposable-email";
 import { isLocalSignInPath } from "./utils/is-local-sign-in-path";
+import { parseInvitationProjectIds } from "./utils/project-access";
 import { verifyTurnstile } from "./utils/verify-turnstile";
 
 config();
@@ -349,6 +350,13 @@ export const auth = betterAuth({
           fields: {
             organizationId: "workspaceId",
           },
+          additionalFields: {
+            projectIds: {
+              type: "string",
+              input: true,
+              required: false,
+            },
+          },
         },
         organizationRole: {
           modelName: "workspace_role",
@@ -377,6 +385,124 @@ export const auth = betterAuth({
           if (!check.ok) {
             throw new APIError("BAD_REQUEST", { message: check.reason });
           }
+        },
+        beforeCreateInvitation: async ({
+          invitation,
+          inviter,
+          organization,
+        }) => {
+          const rawProjectIds = (invitation as { projectIds?: unknown })
+            .projectIds;
+          if (rawProjectIds == null || rawProjectIds === "") return;
+
+          let parsedProjectIds: unknown;
+          try {
+            parsedProjectIds = JSON.parse(String(rawProjectIds));
+          } catch {
+            parsedProjectIds = null;
+          }
+
+          if (
+            typeof rawProjectIds !== "string" ||
+            !Array.isArray(parsedProjectIds) ||
+            parsedProjectIds.some(
+              (projectId) =>
+                typeof projectId !== "string" || projectId.length === 0,
+            )
+          ) {
+            throw new APIError("BAD_REQUEST", {
+              message: "Project assignments must be a valid project list",
+            });
+          }
+
+          const projectIds = parseInvitationProjectIds(rawProjectIds);
+          if (projectIds.length === 0) return;
+
+          const [member] = await db
+            .select({ role: schema.workspaceUserTable.role })
+            .from(schema.workspaceUserTable)
+            .where(
+              and(
+                eq(schema.workspaceUserTable.workspaceId, organization.id),
+                eq(schema.workspaceUserTable.userId, inviter.user.id),
+              ),
+            )
+            .limit(1);
+
+          if (member?.role !== "owner" && member?.role !== "admin") {
+            throw new APIError("FORBIDDEN", {
+              message:
+                "Only workspace owners and admins can assign project access",
+            });
+          }
+
+          const projects = await db
+            .select({ id: schema.projectTable.id })
+            .from(schema.projectTable)
+            .where(
+              and(
+                eq(schema.projectTable.workspaceId, organization.id),
+                inArray(schema.projectTable.id, projectIds),
+              ),
+            );
+
+          if (projects.length !== projectIds.length) {
+            throw new APIError("BAD_REQUEST", {
+              message:
+                "One or more selected projects do not belong to this workspace",
+            });
+          }
+        },
+        afterAcceptInvitation: async ({
+          invitation,
+          member,
+          user,
+          organization,
+        }) => {
+          const projectIds = parseInvitationProjectIds(
+            (invitation as { projectIds?: unknown }).projectIds,
+          );
+
+          await db.transaction(async (tx) => {
+            const existing = await tx
+              .select({ projectId: schema.projectMemberTable.projectId })
+              .from(schema.projectMemberTable)
+              .innerJoin(
+                schema.projectTable,
+                eq(schema.projectMemberTable.projectId, schema.projectTable.id),
+              )
+              .where(
+                and(
+                  eq(schema.projectMemberTable.userId, user.id),
+                  eq(schema.projectTable.workspaceId, organization.id),
+                ),
+              );
+
+            if (existing.length > 0) {
+              await tx.delete(schema.projectMemberTable).where(
+                and(
+                  eq(schema.projectMemberTable.userId, user.id),
+                  inArray(
+                    schema.projectMemberTable.projectId,
+                    existing.map((row) => row.projectId),
+                  ),
+                ),
+              );
+            }
+
+            if (
+              projectIds.length > 0 &&
+              member.role !== "owner" &&
+              member.role !== "admin"
+            ) {
+              await tx.insert(schema.projectMemberTable).values(
+                projectIds.map((projectId) => ({
+                  projectId,
+                  userId: user.id,
+                })),
+              );
+            }
+          });
         },
         afterCreateOrganization: async ({ organization, user }) => {
           // Seed the editable default roles for this workspace. Each

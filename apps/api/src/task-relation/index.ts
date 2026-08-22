@@ -5,6 +5,7 @@ import { describeRoute, resolver, validator } from "hono-openapi";
 import * as v from "valibot";
 import db from "../database";
 import { projectTable, taskRelationTable, taskTable } from "../database/schema";
+import { requireProjectAccess } from "../utils/project-access";
 import { requireWorkspacePermission } from "../utils/require-workspace-permission";
 import { validateWorkspaceAccess } from "../utils/validate-workspace-access";
 import { workspaceAccess } from "../utils/workspace-access-middleware";
@@ -45,7 +46,11 @@ const taskRelation = new Hono<{
     workspaceAccess.fromTaskId("taskId"),
     async (c) => {
       const { taskId } = c.req.valid("param");
-      const relations = await getTaskRelations(taskId, c.get("workspaceId"));
+      const relations = await getTaskRelations(
+        taskId,
+        c.get("workspaceId"),
+        c.get("userId"),
+      );
       return c.json(relations);
     },
   )
@@ -79,7 +84,10 @@ const taskRelation = new Hono<{
       }
       const { sourceTaskId } = c.req.valid("json");
       const [task] = await db
-        .select({ workspaceId: projectTable.workspaceId })
+        .select({
+          projectId: taskTable.projectId,
+          workspaceId: projectTable.workspaceId,
+        })
         .from(taskTable)
         .innerJoin(projectTable, eq(taskTable.projectId, projectTable.id))
         .where(eq(taskTable.id, sourceTaskId))
@@ -88,6 +96,7 @@ const taskRelation = new Hono<{
         throw new HTTPException(404, { message: "Source task not found" });
       }
       await validateWorkspaceAccess(userId, task.workspaceId);
+      await requireProjectAccess(userId, task.projectId);
       c.set("workspaceId", task.workspaceId);
       return next();
     },
@@ -128,7 +137,10 @@ const taskRelation = new Hono<{
       }
       const { id } = c.req.valid("param");
       const [rel] = await db
-        .select({ sourceTaskId: taskRelationTable.sourceTaskId })
+        .select({
+          sourceTaskId: taskRelationTable.sourceTaskId,
+          targetTaskId: taskRelationTable.targetTaskId,
+        })
         .from(taskRelationTable)
         .where(eq(taskRelationTable.id, id))
         .limit(1);
@@ -136,7 +148,10 @@ const taskRelation = new Hono<{
         throw new HTTPException(404, { message: "Task relation not found" });
       }
       const [task] = await db
-        .select({ workspaceId: projectTable.workspaceId })
+        .select({
+          projectId: taskTable.projectId,
+          workspaceId: projectTable.workspaceId,
+        })
         .from(taskTable)
         .innerJoin(projectTable, eq(taskTable.projectId, projectTable.id))
         .where(eq(taskTable.id, rel.sourceTaskId))
@@ -145,6 +160,16 @@ const taskRelation = new Hono<{
         throw new HTTPException(404, { message: "Task not found" });
       }
       await validateWorkspaceAccess(userId, task.workspaceId);
+      await requireProjectAccess(userId, task.projectId);
+
+      const [targetTask] = await db
+        .select({ projectId: taskTable.projectId })
+        .from(taskTable)
+        .where(eq(taskTable.id, rel.targetTaskId))
+        .limit(1);
+      if (targetTask) {
+        await requireProjectAccess(userId, targetTask.projectId);
+      }
       c.set("workspaceId", task.workspaceId);
       return next();
     },

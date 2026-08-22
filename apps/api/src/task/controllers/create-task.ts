@@ -3,6 +3,7 @@ import { HTTPException } from "hono/http-exception";
 import db from "../../database";
 import { columnTable, taskTable, userTable } from "../../database/schema";
 import { publishEvent } from "../../events";
+import { hasProjectAccess } from "../../utils/project-access";
 import { assertValidTaskStatus } from "../validate-task-fields";
 import { claimTaskNumber } from "./claim-task-numbers";
 
@@ -42,6 +43,15 @@ async function createTask({
   if (normalizedUserId && !assignee) {
     throw new HTTPException(404, {
       message: "Assignee not found",
+    });
+  }
+
+  if (
+    normalizedUserId &&
+    !(await hasProjectAccess(normalizedUserId, projectId))
+  ) {
+    throw new HTTPException(400, {
+      message: "Assignee does not have access to this project",
     });
   }
 

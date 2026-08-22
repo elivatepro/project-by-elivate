@@ -6,8 +6,14 @@ import {
   taskTable,
   userTable,
 } from "../../database/schema";
+import { getProjectAccessScope } from "../../utils/project-access";
 
-async function getTaskRelations(taskId: string, workspaceId: string) {
+async function getTaskRelations(
+  taskId: string,
+  workspaceId: string,
+  userId: string,
+) {
+  const scope = await getProjectAccessScope(userId, workspaceId);
   const relations = await db
     .select({
       id: taskRelationTable.id,
@@ -63,6 +69,7 @@ async function getTaskRelations(taskId: string, workspaceId: string) {
         and(
           inArray(taskTable.id, [...taskIds]),
           eq(projectTable.workspaceId, workspaceId),
+          !scope.all ? inArray(projectTable.id, scope.projectIds) : undefined,
         ),
       );
 

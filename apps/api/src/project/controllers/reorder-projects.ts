@@ -2,10 +2,12 @@ import { asc, eq, sql } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
 import db from "../../database";
 import { projectTable } from "../../database/schema";
+import { getProjectAccessScope } from "../../utils/project-access";
 
 async function reorderProjects(
   workspaceId: string,
   projects: Array<{ id: string; position: number }>,
+  userId?: string,
 ) {
   const ids = projects.map((project) => project.id);
   const uniqueIds = new Set(ids);
@@ -15,6 +17,10 @@ async function reorderProjects(
       message: "Duplicate project ids in reorder payload",
     });
   }
+
+  const scope = userId
+    ? await getProjectAccessScope(userId, workspaceId)
+    : null;
 
   return db.transaction(async (tx) => {
     // Serialize ordering writes per workspace so a concurrent create (which
@@ -84,7 +90,7 @@ async function reorderProjects(
         .where(eq(projectTable.id, id));
     }
 
-    return tx.query.projectTable.findMany({
+    const reordered = await tx.query.projectTable.findMany({
       where: eq(projectTable.workspaceId, workspaceId),
       orderBy: [
         asc(projectTable.position),
@@ -92,6 +98,10 @@ async function reorderProjects(
         asc(projectTable.id),
       ],
     });
+
+    return !scope || scope.all
+      ? reordered
+      : reordered.filter((project) => scope.projectIds.includes(project.id));
   });
 }
 

@@ -1,6 +1,7 @@
-import { and, count, eq, isNull, min, sql } from "drizzle-orm";
+import { and, count, eq, inArray, isNull, min, sql } from "drizzle-orm";
 import db from "../../database";
 import { projectTable, taskTable } from "../../database/schema";
+import { getProjectAccessScope } from "../../utils/project-access";
 
 type ProjectStatistics = {
   completionPercentage: number;
@@ -17,6 +18,7 @@ const EMPTY_STATISTICS: ProjectStatistics = {
 async function getProjectStatistics(
   workspaceId: string,
   includeArchived: boolean,
+  projectIds: string[] | null,
 ) {
   const statisticsByProject = new Map<string, ProjectStatistics>();
 
@@ -38,12 +40,15 @@ async function getProjectStatistics(
     .from(taskTable)
     .innerJoin(projectTable, eq(taskTable.projectId, projectTable.id))
     .where(
-      includeArchived
-        ? eq(projectTable.workspaceId, workspaceId)
-        : and(
-            eq(projectTable.workspaceId, workspaceId),
-            isNull(projectTable.archivedAt),
-          ),
+      and(
+        includeArchived
+          ? eq(projectTable.workspaceId, workspaceId)
+          : and(
+              eq(projectTable.workspaceId, workspaceId),
+              isNull(projectTable.archivedAt),
+            ),
+        projectIds ? inArray(projectTable.id, projectIds) : undefined,
+      ),
     )
     .groupBy(taskTable.projectId);
 
@@ -62,14 +67,28 @@ async function getProjectStatistics(
   return statisticsByProject;
 }
 
-async function getProjects(workspaceId: string, includeArchived = false) {
+async function getProjects(
+  workspaceId: string,
+  includeArchived = false,
+  userId?: string,
+) {
+  const scope = userId
+    ? await getProjectAccessScope(userId, workspaceId)
+    : { all: true as const, projectIds: null };
+  const visibleProjectIds = scope.all ? null : scope.projectIds;
+
   const projects = await db.query.projectTable.findMany({
-    where: includeArchived
-      ? eq(projectTable.workspaceId, workspaceId)
-      : and(
-          eq(projectTable.workspaceId, workspaceId),
-          isNull(projectTable.archivedAt),
-        ),
+    where: and(
+      includeArchived
+        ? eq(projectTable.workspaceId, workspaceId)
+        : and(
+            eq(projectTable.workspaceId, workspaceId),
+            isNull(projectTable.archivedAt),
+          ),
+      visibleProjectIds
+        ? inArray(projectTable.id, visibleProjectIds)
+        : undefined,
+    ),
     // `id` is the deterministic tie-breaker: without it, rows sharing both a
     // position and a createdAt come back in an unspecified order.
     orderBy: (project, { asc }) => [
@@ -82,6 +101,7 @@ async function getProjects(workspaceId: string, includeArchived = false) {
   const statisticsByProject = await getProjectStatistics(
     workspaceId,
     includeArchived,
+    visibleProjectIds,
   );
 
   return projects.map((project) => ({

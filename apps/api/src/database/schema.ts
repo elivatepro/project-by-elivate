@@ -267,6 +267,7 @@ export const invitationTable = pgTable(
       .references(() => workspaceTable.id, { onDelete: "cascade" }),
     email: text("email").notNull(),
     role: text("role"),
+    projectIds: text("project_ids"),
     teamId: text("team_id"),
     status: text("status").default("pending").notNull(),
     expiresAt: timestamp("expires_at").notNull(),
@@ -336,6 +337,40 @@ export const projectTable = pgTable(
       table.workspaceId,
       table.position,
     ),
+  ],
+);
+
+export const projectMemberTable = pgTable(
+  "project_member",
+  {
+    id: text("id")
+      .$defaultFn(() => createId())
+      .primaryKey(),
+    projectId: text("project_id")
+      .notNull()
+      .references(() => projectTable.id, {
+        onDelete: "cascade",
+        onUpdate: "cascade",
+      }),
+    userId: text("user_id")
+      .notNull()
+      .references(() => userTable.id, {
+        onDelete: "cascade",
+        onUpdate: "cascade",
+      }),
+    createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { mode: "date" })
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [
+    unique("project_member_project_user_unique").on(
+      table.projectId,
+      table.userId,
+    ),
+    index("project_member_projectId_idx").on(table.projectId),
+    index("project_member_userId_idx").on(table.userId),
   ],
 );
 
@@ -1086,6 +1121,7 @@ export const teamMember = teamMemberTable;
 export const workspace_member = workspaceUserTable;
 export const invitation = invitationTable;
 export const organizationRole = workspaceRoleTable;
+export const project_member = projectMemberTable;
 export const apikey = apikeyTable;
 export const deviceCode = deviceCodeTable;
 

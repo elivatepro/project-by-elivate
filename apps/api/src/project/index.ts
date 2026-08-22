@@ -3,6 +3,7 @@ import { describeRoute, resolver, validator } from "hono-openapi";
 import * as v from "valibot";
 import { requireEntitlement } from "../billing/require-entitlement-middleware";
 import { projectSchema, workspaceOverviewSchema } from "../schemas";
+import { requireProjectAccessForIds } from "../utils/project-access";
 import { requireWorkspacePermission } from "../utils/require-workspace-permission";
 import { workspaceAccess } from "../utils/workspace-access-middleware";
 import archiveProjectCtrl from "./controllers/archive-project";
@@ -42,7 +43,10 @@ const project = new Hono<{
     workspaceAccess.fromQuery(),
     async (c) => {
       const workspaceId = c.get("workspaceId");
-      const overview = await getWorkspaceOverviewCtrl(workspaceId);
+      const overview = await getWorkspaceOverviewCtrl(
+        workspaceId,
+        c.get("userId"),
+      );
       return c.json(overview);
     },
   )
@@ -75,6 +79,7 @@ const project = new Hono<{
       const projects = await getProjectsCtrl(
         workspaceId,
         includeArchived === "true",
+        c.get("userId"),
       );
       return c.json(projects);
     },
@@ -174,7 +179,15 @@ const project = new Hono<{
     async (c) => {
       const workspaceId = c.get("workspaceId");
       const { projects } = c.req.valid("json");
-      const reordered = await reorderProjectsCtrl(workspaceId, projects);
+      await requireProjectAccessForIds(
+        c.get("userId"),
+        projects.map((project) => project.id),
+      );
+      const reordered = await reorderProjectsCtrl(
+        workspaceId,
+        projects,
+        c.get("userId"),
+      );
       return c.json(reordered);
     },
   )

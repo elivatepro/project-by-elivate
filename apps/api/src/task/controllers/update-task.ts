@@ -4,6 +4,7 @@ import db from "../../database";
 import { columnTable, taskTable } from "../../database/schema";
 import { publishEvent } from "../../events";
 import { deleteOrphanedAssets } from "../../storage/cleanup-assets";
+import { hasProjectAccess } from "../../utils/project-access";
 import { assertValidTaskStatus } from "../validate-task-fields";
 
 async function updateTask(
@@ -42,6 +43,16 @@ async function updateTask(
     });
   }
 
+  const nextAssigneeId = userId?.trim() || null;
+  if (
+    nextAssigneeId &&
+    !(await hasProjectAccess(nextAssigneeId, existingTask.projectId))
+  ) {
+    throw new HTTPException(400, {
+      message: "Assignee does not have access to this project",
+    });
+  }
+
   await assertValidTaskStatus(status, projectId);
 
   const column = await db.query.columnTable.findFirst({
@@ -63,7 +74,7 @@ async function updateTask(
       description,
       priority,
       position,
-      userId: userId || null,
+      userId: nextAssigneeId,
     })
     .where(eq(taskTable.id, id))
     .returning();

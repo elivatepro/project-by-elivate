@@ -2,6 +2,7 @@ import { DEFAULT_ROLE_NAMES } from "@kaneo/permissions";
 import {
   CopyIcon,
   EllipsisIcon,
+  FolderKanbanIcon,
   MailIcon,
   ShieldIcon,
   TrashIcon,
@@ -12,6 +13,7 @@ import useCancelInvitation from "@/hooks/mutations/workspace-user/use-cancel-inv
 import useDeleteWorkspaceUser from "@/hooks/mutations/workspace-user/use-delete-workspace-user";
 import useUpdateWorkspaceUserRole from "@/hooks/mutations/workspace-user/use-update-workspace-user-role";
 import useWorkspaceRoles from "@/hooks/queries/workspace/use-workspace-roles";
+import useGetProjectAccess from "@/hooks/queries/workspace-users/use-get-project-access";
 import { useCopyInvitationLink } from "@/hooks/use-copy-invitation-link";
 import { useWorkspacePermission } from "@/hooks/use-workspace-permission";
 import { cn } from "@/lib/cn";
@@ -51,6 +53,7 @@ import {
   TableHeader,
   TableRow,
 } from "../ui/table";
+import ProjectAccessDialog from "./project-access-dialog";
 
 type Props = {
   workspaceId: string;
@@ -97,6 +100,8 @@ function MembersTable({ workspaceId, invitations, users }: Props) {
   );
   const [invitationToCancel, setInvitationToCancel] =
     useState<WorkspaceUserInvitation | null>(null);
+  const [memberToManageProjects, setMemberToManageProjects] =
+    useState<WorkspaceUser | null>(null);
 
   const { user: currentUser } = useAuth();
   const { mutateAsync: deleteWorkspaceUser, isPending: isDeleting } =
@@ -106,11 +111,15 @@ function MembersTable({ workspaceId, invitations, users }: Props) {
   const { mutateAsync: updateMemberRole } = useUpdateWorkspaceUserRole();
   const { copy: copyInvitationLink } = useCopyInvitationLink();
   const { data: allWorkspaceRoles = [] } = useWorkspaceRoles(workspaceId);
-  const { canManageTeam, canRemoveMembers, canInviteUsers } =
+  const { canManageTeam, canRemoveMembers, canInviteUsers, isAdmin } =
     useWorkspacePermission();
   const canChangeRoles = Boolean(canManageTeam());
   const canRemove = Boolean(canRemoveMembers());
   const canInvite = Boolean(canInviteUsers());
+  const canManageProjectAccess = isAdmin;
+  const { data: projectAccess } = useGetProjectAccess(
+    canManageProjectAccess ? workspaceId : "",
+  );
 
   const customRoles = allWorkspaceRoles.filter(
     (role) => !RESERVED_ROLE_NAMES.has(role.role),
@@ -193,6 +202,11 @@ function MembersTable({ workspaceId, invitations, users }: Props) {
             </TableHead>
             <TableHead className="text-foreground font-medium">
               {t("team:membersTable.columns.role", { defaultValue: "Role" })}
+            </TableHead>
+            <TableHead className="text-foreground font-medium">
+              {t("team:membersTable.columns.projects", {
+                defaultValue: "Projects",
+              })}
             </TableHead>
             <TableHead className="text-foreground font-medium">
               {t("team:membersTable.columns.joined", {
@@ -289,6 +303,37 @@ function MembersTable({ workspaceId, invitations, users }: Props) {
                     </Badge>
                   )}
                 </TableCell>
+                <TableCell className="py-3">
+                  {member.role === "owner" || member.role === "admin" ? (
+                    <Badge variant="secondary">
+                      {t("team:projectAccess.allProjects")}
+                    </Badge>
+                  ) : (
+                    (() => {
+                      const assignedProjectIds =
+                        projectAccess?.assignments.find(
+                          (assignment) => assignment.userId === member.userId,
+                        )?.projectIds ?? [];
+
+                      return canManageProjectAccess ? (
+                        <Button
+                          className="h-8 gap-1.5 px-2 text-xs"
+                          onClick={() => setMemberToManageProjects(member)}
+                          variant="outline"
+                        >
+                          <FolderKanbanIcon className="size-3.5" />
+                          {assignedProjectIds.length > 0
+                            ? t("team:projectAccess.projectCount", {
+                                count: assignedProjectIds.length,
+                              })
+                            : t("team:projectAccess.noAccess")}
+                        </Button>
+                      ) : (
+                        <span className="text-sm text-muted-foreground">–</span>
+                      );
+                    })()
+                  )}
+                </TableCell>
                 <TableCell className="py-3 text-sm text-muted-foreground tabular-nums">
                   {member.createdAt ? formatDateMedium(member.createdAt) : "–"}
                 </TableCell>
@@ -363,6 +408,9 @@ function MembersTable({ workspaceId, invitations, users }: Props) {
               <TableCell className="py-3 text-sm text-muted-foreground">
                 –
               </TableCell>
+              <TableCell className="py-3 text-sm text-muted-foreground">
+                –
+              </TableCell>
               <TableCell className="pe-6 py-3 text-right">
                 {canInvite ? (
                   <Menu>
@@ -402,7 +450,7 @@ function MembersTable({ workspaceId, invitations, users }: Props) {
 
           {users.length === 0 && pendingInvitations.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={4} className="py-16 text-center">
+              <TableCell colSpan={5} className="py-16 text-center">
                 <div className="flex flex-col items-center gap-2 text-muted-foreground">
                   <p className="text-sm font-medium text-foreground">
                     {t("team:membersTable.emptyTitle")}
@@ -497,6 +545,13 @@ function MembersTable({ workspaceId, invitations, users }: Props) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      <ProjectAccessDialog
+        access={projectAccess}
+        member={memberToManageProjects}
+        onClose={() => setMemberToManageProjects(null)}
+        open={Boolean(memberToManageProjects)}
+        workspaceId={workspaceId}
+      />
     </>
   );
 }

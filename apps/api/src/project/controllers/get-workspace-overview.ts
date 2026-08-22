@@ -1,4 +1,14 @@
-import { and, asc, count, desc, eq, gte, isNull, sql } from "drizzle-orm";
+import {
+  and,
+  asc,
+  count,
+  desc,
+  eq,
+  gte,
+  inArray,
+  isNull,
+  sql,
+} from "drizzle-orm";
 import db from "../../database";
 import {
   activityTable,
@@ -7,6 +17,7 @@ import {
   taskTable,
   userTable,
 } from "../../database/schema";
+import { getProjectAccessScope } from "../../utils/project-access";
 
 const completedTaskCondition = sql<boolean>`(
   ${taskTable.status} in ('done', 'archived')
@@ -22,10 +33,15 @@ type ProjectProgressRow = {
   overdueTasks: number;
 };
 
-async function getWorkspaceOverview(workspaceId: string) {
+async function getWorkspaceOverview(workspaceId: string, userId?: string) {
+  const scope = userId
+    ? await getProjectAccessScope(userId, workspaceId)
+    : { all: true as const, projectIds: null };
+
   const activeProjectCondition = and(
     eq(projectTable.workspaceId, workspaceId),
     isNull(projectTable.archivedAt),
+    scope.all ? undefined : inArray(projectTable.id, scope.projectIds),
   );
 
   const projects = await db.query.projectTable.findMany({

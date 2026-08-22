@@ -1,9 +1,11 @@
 import type { Context } from "hono";
 import { resolveAssetBearerOrCookie } from "./authenticate-api-request";
+import { requireProjectAccess } from "./project-access";
 import { validateWorkspaceAccess } from "./validate-workspace-access";
 
 type AssetAccessTarget = {
   workspaceId: string;
+  projectId?: string;
   isPublic: boolean | null;
 };
 
@@ -26,4 +28,7 @@ export async function authorizeAssetAccess(
 
   const { userId, apiKeyId } = await resolveAssetBearerOrCookie(c);
   await validateWorkspaceAccess(userId, asset.workspaceId, apiKeyId);
+  if (asset.projectId) {
+    await requireProjectAccess(userId, asset.projectId);
+  }
 }

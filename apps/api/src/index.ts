@@ -76,6 +76,7 @@ import {
   normalizeNullableSchemasForOpenApi30,
   normalizeOrganizationAuthOperations,
 } from "./utils/openapi-spec";
+import { requireProjectAccess } from "./utils/project-access";
 import { seedDefaultWorkspaceRoles } from "./utils/seed-default-workspace-roles";
 import { validateWorkspaceAccess } from "./utils/validate-workspace-access";
 import workflowRule from "./workflow-rule";
@@ -307,6 +308,7 @@ export function createApp() {
           mimeType: schema.assetTable.mimeType,
           filename: schema.assetTable.filename,
           workspaceId: schema.assetTable.workspaceId,
+          projectId: schema.assetTable.projectId,
           isPublic: schema.projectTable.isPublic,
         })
         .from(schema.assetTable)
@@ -731,6 +733,7 @@ export function createApp() {
         }
 
         await validateWorkspaceAccess(userId, project.workspaceId);
+        await requireProjectAccess(userId, projectId);
       }
 
       const windowId = c.req.query("windowId");

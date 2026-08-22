@@ -9,6 +9,7 @@ import { integrationTable, projectTable } from "../database/schema";
 import { type GiteaConfig, validateGiteaConfig } from "../plugins/gitea/config";
 import { handleGiteaWebhookRequest } from "../plugins/gitea/webhook-handler";
 import { giteaIntegrationSchema } from "../schemas";
+import { requireProjectAccess } from "../utils/project-access";
 import {
   hasWorkspacePermission,
   requireWorkspacePermission,
@@ -385,6 +386,7 @@ const giteaIntegration = new Hono<{
       const apiKeyId = apiKey?.id;
 
       await validateWorkspaceAccess(userId, project.workspaceId, apiKeyId);
+      await requireProjectAccess(userId, projectId);
       c.set("workspaceId", project.workspaceId);
 
       return next();

@@ -6,6 +6,7 @@ type InviteWorkspaceUserRequest = {
   workspaceId: string;
   email: string;
   role: "admin" | "member" | "owner";
+  projectIds?: string[];
   resend?: boolean;
 };
 
@@ -15,12 +16,14 @@ function useInviteWorkspaceUser() {
       workspaceId,
       email,
       role,
+      projectIds,
       resend,
     }: InviteWorkspaceUserRequest) => {
       const { data, error } = await authClient.organization.inviteMember({
         email,
         role,
         organizationId: workspaceId,
+        projectIds: JSON.stringify(projectIds ?? []),
         resend,
       });
 
@@ -41,6 +44,15 @@ function useInviteWorkspaceUser() {
 
       queryClient.invalidateQueries({
         queryKey: ["workspace-users", workspaceId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["workspace-project-access", workspaceId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["projects", workspaceId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["workspace-overview", workspaceId],
       });
     },
   });

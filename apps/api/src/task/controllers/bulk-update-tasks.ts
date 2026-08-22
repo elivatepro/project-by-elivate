@@ -12,6 +12,7 @@ import {
 import { publishEvent } from "../../events";
 import { removeLabelFromGitea } from "../../plugins/gitea/utils/sync-label-to-gitea";
 import { removeLabelFromGitHub } from "../../plugins/github/utils/sync-label-to-github";
+import { hasProjectAccess } from "../../utils/project-access";
 import {
   assertValidPriority,
   assertValidTaskStatus,
@@ -164,6 +165,19 @@ async function bulkUpdateTasks({
     }
 
     case "updateAssignee": {
+      if (value) {
+        const accessible = await Promise.all(
+          [...new Set(tasks.map((task) => task.projectId))].map((projectId) =>
+            hasProjectAccess(value, projectId),
+          ),
+        );
+        if (accessible.some((canAccess) => !canAccess)) {
+          throw new HTTPException(400, {
+            message: "Assignee does not have access to every selected project",
+          });
+        }
+      }
+
       const newAssigneeName = value
         ? (
             await db

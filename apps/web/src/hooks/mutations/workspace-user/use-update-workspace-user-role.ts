@@ -39,6 +39,15 @@ function useUpdateWorkspaceUserRole() {
       queryClient.invalidateQueries({
         queryKey: ["workspace-users", variables.workspaceId],
       });
+      queryClient.invalidateQueries({
+        queryKey: ["workspace-project-access", variables.workspaceId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["projects", variables.workspaceId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["workspace-overview", variables.workspaceId],
+      });
       // useGetActiveWorkspaceUser is keyed ["workspace-user", "active", ...]
       // and drives sidebar/role badges for the current user.
       queryClient.invalidateQueries({

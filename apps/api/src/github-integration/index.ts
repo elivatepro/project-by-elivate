@@ -12,6 +12,7 @@ import {
 } from "../plugins/github/config";
 import { handleGitHubWebhook } from "../plugins/github/webhook-handler";
 import { githubIntegrationSchema } from "../schemas";
+import { requireProjectAccess } from "../utils/project-access";
 import { requireWorkspacePermission } from "../utils/require-workspace-permission";
 import { validateWorkspaceAccess } from "../utils/validate-workspace-access";
 import { workspaceAccess } from "../utils/workspace-access-middleware";
@@ -361,6 +362,7 @@ const githubIntegration = new Hono<{
       const apiKeyId = apiKey?.id;
 
       await validateWorkspaceAccess(userId, project.workspaceId, apiKeyId);
+      await requireProjectAccess(userId, projectId);
       c.set("workspaceId", project.workspaceId);
 
       return next();

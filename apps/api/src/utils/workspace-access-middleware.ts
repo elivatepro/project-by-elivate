@@ -2,6 +2,7 @@ import { and, eq, inArray } from "drizzle-orm";
 import type { Context, Next } from "hono";
 import { HTTPException } from "hono/http-exception";
 import db, { schema } from "../database";
+import { requireProjectAccessForIds } from "./project-access";
 import { validateWorkspaceAccess } from "./validate-workspace-access";
 
 type WorkspaceIdSource =
@@ -52,6 +53,7 @@ export function workspaceAccessMiddleware(
     }
 
     let workspaceId: string | null = null;
+    let projectIds: string[] = [];
 
     for (const source of config.sources) {
       if (source.type === "query") {
@@ -72,7 +74,9 @@ export function workspaceAccessMiddleware(
         // handler acted on another (`{"taskId": "<someone else's>"}`).
         const id = c.req.param(source.idKey) || idFromBody;
         if (id) {
-          workspaceId = await lookupWorkspaceId(source.resource, id);
+          const lookup = await lookupWorkspaceId(source.resource, id);
+          workspaceId = lookup?.workspaceId ?? null;
+          if (lookup?.projectId) projectIds = [lookup.projectId];
         }
       } else if (source.type === "lookupMany") {
         const body = await readJsonObjectBody(c);
@@ -83,7 +87,10 @@ export function workspaceAccessMiddleware(
           );
           if (taskIds.length > 0) {
             const tasks = await db
-              .select({ workspaceId: schema.projectTable.workspaceId })
+              .select({
+                workspaceId: schema.projectTable.workspaceId,
+                projectId: schema.taskTable.projectId,
+              })
               .from(schema.taskTable)
               .innerJoin(
                 schema.projectTable,
@@ -102,6 +109,7 @@ export function workspaceAccessMiddleware(
               });
             }
             workspaceId = workspaceIds[0] ?? null;
+            projectIds = [...new Set(tasks.map((task) => task.projectId))];
           }
         }
       }
@@ -122,6 +130,10 @@ export function workspaceAccessMiddleware(
 
     await validateWorkspaceAccess(userId, workspaceId, apiKeyId);
 
+    if (projectIds.length > 0) {
+      await requireProjectAccessForIds(userId, projectIds);
+    }
+
     c.set("workspaceId", workspaceId);
 
     return next();
@@ -139,22 +151,26 @@ async function lookupWorkspaceId(
     | "column"
     | "workflowRule",
   id: string,
-): Promise<string | null> {
+): Promise<{ workspaceId: string | null; projectId: string | null } | null> {
   try {
     switch (resource) {
       case "project": {
         const [project] = await db
-          .select({ workspaceId: schema.projectTable.workspaceId })
+          .select({
+            workspaceId: schema.projectTable.workspaceId,
+            projectId: schema.projectTable.id,
+          })
           .from(schema.projectTable)
           .where(eq(schema.projectTable.id, id))
           .limit(1);
-        return project?.workspaceId || null;
+        return project ?? null;
       }
 
       case "task": {
         const [task] = await db
           .select({
             workspaceId: schema.projectTable.workspaceId,
+            projectId: schema.taskTable.projectId,
           })
           .from(schema.taskTable)
           .innerJoin(
@@ -163,22 +179,30 @@ async function lookupWorkspaceId(
           )
           .where(eq(schema.taskTable.id, id))
           .limit(1);
-        return task?.workspaceId || null;
+        return task ?? null;
       }
 
       case "label": {
         const [label] = await db
-          .select({ workspaceId: schema.labelTable.workspaceId })
+          .select({
+            workspaceId: schema.labelTable.workspaceId,
+            projectId: schema.taskTable.projectId,
+          })
           .from(schema.labelTable)
+          .leftJoin(
+            schema.taskTable,
+            eq(schema.labelTable.taskId, schema.taskTable.id),
+          )
           .where(eq(schema.labelTable.id, id))
           .limit(1);
-        return label?.workspaceId || null;
+        return label ?? null;
       }
 
       case "timeEntry": {
         const [timeEntry] = await db
           .select({
             workspaceId: schema.projectTable.workspaceId,
+            projectId: schema.taskTable.projectId,
           })
           .from(schema.timeEntryTable)
           .innerJoin(
@@ -191,13 +215,14 @@ async function lookupWorkspaceId(
           )
           .where(eq(schema.timeEntryTable.id, id))
           .limit(1);
-        return timeEntry?.workspaceId || null;
+        return timeEntry ?? null;
       }
 
       case "activity": {
         const [activity] = await db
           .select({
             workspaceId: schema.projectTable.workspaceId,
+            projectId: schema.taskTable.projectId,
           })
           .from(schema.activityTable)
           .innerJoin(
@@ -210,13 +235,14 @@ async function lookupWorkspaceId(
           )
           .where(eq(schema.activityTable.id, id))
           .limit(1);
-        return activity?.workspaceId || null;
+        return activity ?? null;
       }
 
       case "comment": {
         const [comment] = await db
           .select({
             workspaceId: schema.projectTable.workspaceId,
+            projectId: schema.taskTable.projectId,
           })
           .from(schema.activityTable)
           .innerJoin(
@@ -234,13 +260,14 @@ async function lookupWorkspaceId(
             ),
           )
           .limit(1);
-        return comment?.workspaceId || null;
+        return comment ?? null;
       }
 
       case "column": {
         const [column] = await db
           .select({
             workspaceId: schema.projectTable.workspaceId,
+            projectId: schema.columnTable.projectId,
           })
           .from(schema.columnTable)
           .innerJoin(
@@ -249,13 +276,14 @@ async function lookupWorkspaceId(
           )
           .where(eq(schema.columnTable.id, id))
           .limit(1);
-        return column?.workspaceId || null;
+        return column ?? null;
       }
 
       case "workflowRule": {
         const [workflowRule] = await db
           .select({
             workspaceId: schema.projectTable.workspaceId,
+            projectId: schema.workflowRuleTable.projectId,
           })
           .from(schema.workflowRuleTable)
           .innerJoin(
@@ -264,7 +292,7 @@ async function lookupWorkspaceId(
           )
           .where(eq(schema.workflowRuleTable.id, id))
           .limit(1);
-        return workflowRule?.workspaceId || null;
+        return workflowRule ?? null;
       }
 
       default:

@@ -3,6 +3,7 @@ import { HTTPException } from "hono/http-exception";
 import db from "../../database";
 import { columnTable, projectTable, taskTable } from "../../database/schema";
 import { publishEvent } from "../../events";
+import { hasProjectAccess } from "../../utils/project-access";
 import {
   coercePriority,
   coerceStatus,
@@ -49,6 +50,13 @@ async function importTasks(
         taskData.priority || "low",
       );
       const warnings = [statusWarning, priorityWarning].filter(Boolean);
+      const assigneeId = taskData.userId?.trim() || null;
+
+      if (assigneeId && !(await hasProjectAccess(assigneeId, projectId))) {
+        throw new HTTPException(400, {
+          message: "Assignee does not have access to this project",
+        });
+      }
 
       const column = await db.query.columnTable.findFirst({
         where: and(
@@ -64,7 +72,7 @@ async function importTasks(
           .insert(taskTable)
           .values({
             projectId,
-            userId: taskData.userId || null,
+            userId: assigneeId,
             title: taskData.title,
             status,
             columnId: column?.id ?? null,

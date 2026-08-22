@@ -1,6 +1,9 @@
+import { eq } from "drizzle-orm";
 import type { WSContext } from "hono/ws";
+import db, { schema } from "../database";
 import { subscribeToEvent } from "../events";
 import { isRedisConfigured } from "../redis";
+import { hasProjectAccess } from "../utils/project-access";
 import type {
   BroadcastAdapter,
   BroadcastMessage,
@@ -179,6 +182,30 @@ export function removeConnection(projectId: string, conn: ProjectConnection) {
   }
 }
 
+export function closeProjectConnectionsForUser(
+  projectIds: string[],
+  userId: string,
+) {
+  for (const projectId of projectIds) {
+    const connections = projectConnections.get(projectId);
+    if (!connections) continue;
+
+    for (const conn of connections) {
+      if (conn.userId !== userId) continue;
+      connections.delete(conn);
+      try {
+        conn.ws.close(4003, "Project access removed");
+      } catch {
+        // The connection may already be closing.
+      }
+    }
+
+    if (connections.size === 0) {
+      projectConnections.delete(projectId);
+    }
+  }
+}
+
 export function broadcastToProject(
   projectId: string,
   message: ProjectBroadcastMessage,
@@ -313,6 +340,34 @@ subscribeToEvent<{ notificationId: string; userId: string }>(
   "notification.created",
   async (data) => {
     if (data.userId) {
+      const notification = await db.query.notificationTable.findFirst({
+        where: eq(schema.notificationTable.id, data.notificationId),
+      });
+      const eventData = notification?.eventData;
+      const eventProjectId =
+        eventData && typeof eventData === "object" && !Array.isArray(eventData)
+          ? (eventData as Record<string, unknown>).projectId
+          : null;
+      let projectId =
+        typeof eventProjectId === "string" ? eventProjectId : null;
+
+      if (
+        !projectId &&
+        notification?.resourceType === "task" &&
+        notification.resourceId
+      ) {
+        const [task] = await db
+          .select({ projectId: schema.taskTable.projectId })
+          .from(schema.taskTable)
+          .where(eq(schema.taskTable.id, notification.resourceId))
+          .limit(1);
+        projectId = task?.projectId ?? null;
+      }
+
+      if (projectId && !(await hasProjectAccess(data.userId, projectId))) {
+        return;
+      }
+
       broadcastToUser(data.userId, { type: "NOTIFICATION_CREATED" });
     }
   },

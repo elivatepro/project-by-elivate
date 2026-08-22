@@ -8,6 +8,7 @@ import {
   workspaceTable,
   workspaceUserTable,
 } from "../../database/schema";
+import { getAccessibleProjectIdsForWorkspaces } from "../../utils/project-access";
 import { escapeLikePattern } from "../like-pattern";
 import { TASK_SHORT_ID_PATTERN } from "../task-short-id";
 
@@ -141,12 +142,20 @@ async function globalSearch(params: SearchParams): Promise<{
     return { results: [], totalCount: 0, searchQuery: query };
   }
 
+  const accessibleProjectIds = await getAccessibleProjectIdsForWorkspaces(
+    resolvedUserId,
+    accessibleWorkspaceIds,
+  );
+
   const results: SearchResult[] = [];
   const searchPattern = `%${query.toLowerCase()}%`;
 
   const workspaceFilter = workspaceId
-    ? eq(projectTable.workspaceId, workspaceId)
-    : inArray(projectTable.workspaceId, accessibleWorkspaceIds);
+    ? and(
+        eq(projectTable.workspaceId, workspaceId),
+        inArray(projectTable.id, accessibleProjectIds),
+      )
+    : inArray(projectTable.id, accessibleProjectIds);
 
   // Check if query matches short-id pattern (e.g. "DEP-23"). `generateProjectSlug`
   // normalizes to NFKC before it stores a key, so the query is normalized too,

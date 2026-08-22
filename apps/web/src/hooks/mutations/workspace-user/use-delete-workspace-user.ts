@@ -33,6 +33,15 @@ function useDeleteWorkspaceUser() {
       queryClient.invalidateQueries({
         queryKey: ["workspace-users", workspaceId],
       });
+      queryClient.invalidateQueries({
+        queryKey: ["workspace-project-access", workspaceId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["projects", workspaceId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["workspace-overview", workspaceId],
+      });
     },
   });
 }

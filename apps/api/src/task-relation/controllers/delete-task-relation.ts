@@ -1,8 +1,13 @@
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
 import db from "../../database";
-import { taskRelationTable, taskTable } from "../../database/schema";
+import {
+  projectTable,
+  taskRelationTable,
+  taskTable,
+} from "../../database/schema";
 import { publishEvent } from "../../events";
+import { requireProjectAccess } from "../../utils/project-access";
 
 async function deleteTaskRelation(id: string, userId: string) {
   const [rel] = await db
@@ -20,11 +25,17 @@ async function deleteTaskRelation(id: string, userId: string) {
     });
   }
 
-  const [task] = await db
-    .select({ projectId: taskTable.projectId })
+  const tasks = await db
+    .select({ id: taskTable.id, projectId: taskTable.projectId })
     .from(taskTable)
-    .where(eq(taskTable.id, rel.sourceTaskId))
-    .limit(1);
+    .innerJoin(projectTable, eq(taskTable.projectId, projectTable.id))
+    .where(inArray(taskTable.id, [rel.sourceTaskId, rel.targetTaskId]));
+
+  for (const task of tasks) {
+    await requireProjectAccess(userId, task.projectId);
+  }
+
+  const task = tasks.find((candidate) => candidate.id === rel.sourceTaskId);
 
   const [relation] = await db
     .delete(taskRelationTable)

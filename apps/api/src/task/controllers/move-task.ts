@@ -8,6 +8,7 @@ import {
   taskTable,
 } from "../../database/schema";
 import { publishEvent } from "../../events";
+import { requireProjectAccess } from "../../utils/project-access";
 import { claimTaskNumber } from "./claim-task-numbers";
 
 type DbOrTx = typeof db | Parameters<Parameters<typeof db.transaction>[0]>[0];
@@ -126,6 +127,8 @@ async function moveTask({
       message: "Tasks can only be moved within the same workspace",
     });
   }
+
+  await requireProjectAccess(currentUserId, destinationProjectId);
 
   const resolvedColumn = await resolveDestinationStatus(
     destinationProjectId,

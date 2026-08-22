@@ -3,6 +3,7 @@ import { HTTPException } from "hono/http-exception";
 import db from "../../database";
 import { taskTable, userTable } from "../../database/schema";
 import { publishEvent } from "../../events";
+import { hasProjectAccess } from "../../utils/project-access";
 
 async function updateTaskAssignee({
   id,
@@ -23,9 +24,18 @@ async function updateTaskAssignee({
     });
   }
 
-  const nextAssigneeId = userId || null;
+  const nextAssigneeId = userId?.trim() || null;
   if (existingTask.userId === nextAssigneeId) {
     return existingTask;
+  }
+
+  if (
+    nextAssigneeId &&
+    !(await hasProjectAccess(nextAssigneeId, existingTask.projectId))
+  ) {
+    throw new HTTPException(400, {
+      message: "Assignee does not have access to this project",
+    });
   }
 
   const [updatedTask] = await db
@@ -40,17 +50,17 @@ async function updateTaskAssignee({
     });
   }
 
-  const newAssigneeName = userId
+  const newAssigneeName = nextAssigneeId
     ? (
         await db
           .select({ name: userTable.name })
           .from(userTable)
-          .where(eq(userTable.id, userId))
+          .where(eq(userTable.id, nextAssigneeId))
           .limit(1)
       )[0]?.name
     : undefined;
 
-  if (!userId) {
+  if (!nextAssigneeId) {
     await publishEvent("task.unassigned", {
       taskId: updatedTask.id,
       projectId: updatedTask.projectId,
@@ -68,7 +78,7 @@ async function updateTaskAssignee({
     userId: currentUserId,
     oldAssignee: existingTask.userId,
     newAssignee: newAssigneeName,
-    newAssigneeId: userId,
+    newAssigneeId: nextAssigneeId,
     title: updatedTask.title,
     type: "assignee_changed",
   });
